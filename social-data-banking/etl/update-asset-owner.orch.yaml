@@ -1,0 +1,32 @@
+type: "orchestration"
+version:
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        success:
+        - "Update Asset Owner"
+      parameters:
+        componentName: "Start"
+    Update Asset Owner:
+      type: "sql-executor"
+      parameters:
+        componentName: "Update Asset Owner"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: "UPDATE SOCIAL.DATA_BANKING.DIM_ASSETS \nSET \"CURRENT_OWNER_USER_SK\"\
+          \ = (SELECT \"USER_SK\" FROM SOCIAL.DATA_BANKING.DIM_USERS WHERE \"USER_NK\"\
+          \ = 'user456') \nWHERE \"S3_KEY\" = 'sample-asset-123.jpg';"
+design:
+  components:
+    Update Asset Owner:
+      position:
+        x: 200
+        "y": 0
+      tempMetlId:
+    Start:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId:

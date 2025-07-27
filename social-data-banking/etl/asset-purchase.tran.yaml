@@ -1,0 +1,163 @@
+type: "transformation"
+version:
+pipeline:
+  components:
+    Sample Asset Purchase Data:
+      type: "fixed-flow"
+      parameters:
+        componentName: "Sample Asset Purchase Data"
+        columns:
+        - - "S3_KEY"
+          - "VARCHAR"
+          - "255"
+          - ""
+        - - "USER_NK"
+          - "VARCHAR"
+          - "50"
+          - ""
+        - - "CREDITS_SPENT"
+          - "NUMBER"
+          - "10"
+          - "0"
+        - - "TRANSACTION_TIMESTAMP"
+          - "TIMESTAMP"
+          - ""
+          - ""
+        values:
+        - - "sample-asset-123.jpg"
+          - "user456"
+          - "100"
+          - "2023-10-15 14:45:00"
+    Check User Exists:
+      type: "sql"
+      sources:
+      - "Sample Asset Purchase Data"
+      parameters:
+        componentName: "Check User Exists"
+        query: "WITH user_check AS (\n  SELECT \n    \"S3_KEY\",\n    \"USER_NK\"\
+          ,\n    \"CREDITS_SPENT\",\n    \"TRANSACTION_TIMESTAMP\",\n    (SELECT \"\
+          USER_SK\" FROM SOCIAL.DATA_BANKING.DIM_USERS WHERE \"USER_NK\" = t.\"USER_NK\"\
+          ) AS \"USER_SK\"\n  FROM $T{Sample Asset Purchase Data} t\n)\n\nSELECT \n\
+          \  u.\"S3_KEY\",\n  u.\"USER_NK\",\n  u.\"CREDITS_SPENT\",\n  u.\"TRANSACTION_TIMESTAMP\"\
+          ,\n  COALESCE(\n    u.\"USER_SK\",\n    (SELECT \"USER_SK\" FROM SOCIAL.DATA_BANKING.DIM_USERS\
+          \ WHERE \"USER_NK\" = u.\"USER_NK\")\n  ) AS \"USER_SK\"\nFROM user_check\
+          \ u"
+    Insert User:
+      type: "sql"
+      sources:
+      - "Check User Exists"
+      parameters:
+        componentName: "Insert User"
+        query: "SELECT \n  \"S3_KEY\",\n  \"USER_NK\",\n  \"CREDITS_SPENT\",\n  \"\
+          TRANSACTION_TIMESTAMP\",\n  \"USER_SK\"\nFROM $T{Check User Exists}"
+    Insert Into DIM_USERS:
+      type: "table-output"
+      sources:
+      - "Insert User"
+      parameters:
+        componentName: "Insert Into DIM_USERS"
+        warehouse: "[Environment Default]"
+        database: "SOCIAL"
+        schema: "DATA_BANKING"
+        targetTable: "DIM_USERS"
+        fixDataTypeMismatches: "Yes"
+        outputMode: "Append"
+        columnMapping:
+        - - "USER_NK"
+          - "USER_NK"
+    Get Asset and User SK:
+      type: "sql"
+      sources:
+      - "Insert Into DIM_USERS"
+      parameters:
+        componentName: "Get Asset and User SK"
+        query: "SELECT \n  (SELECT \"ASSET_SK\" FROM SOCIAL.DATA_BANKING.DIM_ASSETS\
+          \ WHERE \"S3_KEY\" = 'sample-asset-123.jpg') AS \"ASSET_SK\",\n  (SELECT\
+          \ \"USER_SK\" FROM SOCIAL.DATA_BANKING.DIM_USERS WHERE \"USER_NK\" = 'user456')\
+          \ AS \"USER_SK\",\n  'sample-asset-123.jpg' AS \"S3_KEY\",\n  'user456'\
+          \ AS \"USER_NK\",\n  100 AS \"CREDITS_SPENT\",\n  '2023-10-15 14:45:00'::TIMESTAMP_NTZ\
+          \ AS \"TRANSACTION_TIMESTAMP\""
+    Update Asset Owner:
+      type: "sql"
+      sources:
+      - "Get Asset and User SK"
+      parameters:
+        componentName: "Update Asset Owner"
+        query: "SELECT \n  \"ASSET_SK\",\n  \"USER_SK\",\n  \"S3_KEY\",\n  \"USER_NK\"\
+          ,\n  \"CREDITS_SPENT\",\n  \"TRANSACTION_TIMESTAMP\",\n  'UPDATE SOCIAL.DATA_BANKING.DIM_ASSETS\
+          \ SET \"CURRENT_OWNER_USER_SK\" = ' || \"USER_SK\" || ' WHERE \"ASSET_SK\"\
+          \ = ' || \"ASSET_SK\" AS \"UPDATE_SQL\"\nFROM $T{Get Asset and User SK}"
+    Create Transaction Record:
+      type: "sql"
+      sources:
+      - "Update Asset Owner"
+      parameters:
+        componentName: "Create Transaction Record"
+        query: "SELECT \n  \"ASSET_SK\",\n  \"USER_SK\" AS \"BUYER_USER_SK\",\n  'PURCHASE'\
+          \ AS \"TRANSACTION_TYPE\",\n  \"CREDITS_SPENT\",\n  \"TRANSACTION_TIMESTAMP\"\
+          \nFROM $T{Update Asset Owner}"
+    Insert Into FCT_ASSET_TRANSACTIONS:
+      type: "table-output"
+      sources:
+      - "Create Transaction Record"
+      parameters:
+        componentName: "Insert Into FCT_ASSET_TRANSACTIONS"
+        warehouse: "[Environment Default]"
+        database: "SOCIAL"
+        schema: "DATA_BANKING"
+        targetTable: "FCT_ASSET_TRANSACTIONS"
+        fixDataTypeMismatches: "Yes"
+        outputMode: "Append"
+        columnMapping:
+        - - "ASSET_SK"
+          - "ASSET_SK"
+        - - "BUYER_USER_SK"
+          - "BUYER_USER_SK"
+        - - "TRANSACTION_TYPE"
+          - "TRANSACTION_TYPE"
+        - - "CREDITS_SPENT"
+          - "CREDITS_SPENT"
+        - - "TRANSACTION_TIMESTAMP"
+          - "TRANSACTION_TIMESTAMP"
+design:
+  components:
+    Sample Asset Purchase Data:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId:
+    Check User Exists:
+      position:
+        x: 200
+        "y": 0
+      tempMetlId:
+    Insert User:
+      position:
+        x: 400
+        "y": 0
+      tempMetlId:
+    Insert Into DIM_USERS:
+      position:
+        x: 600
+        "y": 0
+      tempMetlId:
+    Get Asset and User SK:
+      position:
+        x: 800
+        "y": 0
+      tempMetlId:
+    Update Asset Owner:
+      position:
+        x: 1000
+        "y": 0
+      tempMetlId:
+    Create Transaction Record:
+      position:
+        x: 1200
+        "y": 0
+      tempMetlId:
+    Insert Into FCT_ASSET_TRANSACTIONS:
+      position:
+        x: 1400
+        "y": 0
+      tempMetlId:
