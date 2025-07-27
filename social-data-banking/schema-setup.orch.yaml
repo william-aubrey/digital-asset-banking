@@ -1,0 +1,146 @@
+type: "orchestration"
+version:
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        success:
+        - "Create DATA_BANKING Schema"
+      parameters:
+        componentName: "Start"
+    Create DATA_BANKING Schema:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Create DIM_ASSET_TYPES Table"
+      parameters:
+        componentName: "Create DATA_BANKING Schema"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: "CREATE SCHEMA IF NOT EXISTS SOCIAL.DATA_BANKING;"
+    Create DIM_ASSET_TYPES Table:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Create DIM_USERS Table"
+      parameters:
+        componentName: "Create DIM_ASSET_TYPES Table"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: |-
+          CREATE OR REPLACE TABLE SOCIAL.DATA_BANKING.DIM_ASSET_TYPES (
+              ASSET_TYPE_SK   NUMBER(38,0) IDENTITY PRIMARY KEY,
+              ASSET_TYPE_NAME VARCHAR(50) UNIQUE NOT NULL COMMENT 'The name of the type (e.g., generic, cyoa)'
+          );
+    Create DIM_USERS Table:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Create DIM_ASSETS Table"
+      parameters:
+        componentName: "Create DIM_USERS Table"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: |-
+          CREATE OR REPLACE TABLE SOCIAL.DATA_BANKING.DIM_USERS (
+              USER_SK NUMBER(38,0) IDENTITY PRIMARY KEY,
+              USER_NK VARCHAR(255) UNIQUE NOT NULL COMMENT 'Natural key; the user ID from the application'
+          );
+    Create DIM_ASSETS Table:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Create FCT_ASSET_TRANSACTIONS Table"
+      parameters:
+        componentName: "Create DIM_ASSETS Table"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: |-
+          CREATE OR REPLACE TABLE SOCIAL.DATA_BANKING.DIM_ASSETS (
+              ASSET_SK                NUMBER(38,0) IDENTITY PRIMARY KEY,
+              S3_KEY                  VARCHAR(1024) UNIQUE NOT NULL COMMENT 'Natural key; the unique S3 object key for the asset file',
+              ASSET_NAME              VARCHAR(255) NOT NULL,
+              ASSET_TYPE_SK           NUMBER(38,0) NOT NULL REFERENCES SOCIAL.DATA_BANKING.DIM_ASSET_TYPES(ASSET_TYPE_SK),
+              CURRENT_OWNER_USER_SK   NUMBER(38,0) REFERENCES SOCIAL.DATA_BANKING.DIM_USERS(USER_SK),
+              GRAPH_ROLE              VARCHAR(50),
+              UPLOAD_TIMESTAMP        TIMESTAMP_NTZ NOT NULL
+          );
+    Create FCT_ASSET_TRANSACTIONS Table:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Create DAB_SEMANTIC_VIEW"
+      parameters:
+        componentName: "Create FCT_ASSET_TRANSACTIONS Table"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: |-
+          CREATE OR REPLACE TABLE SOCIAL.DATA_BANKING.FCT_ASSET_TRANSACTIONS (
+              TRANSACTION_PK        NUMBER(38,0) IDENTITY PRIMARY KEY,
+              ASSET_SK              NUMBER(38,0) NOT NULL REFERENCES SOCIAL.DATA_BANKING.DIM_ASSETS(ASSET_SK),
+              BUYER_USER_SK         NUMBER(38,0) REFERENCES SOCIAL.DATA_BANKING.DIM_USERS(USER_SK),
+              TRANSACTION_TYPE      VARCHAR(50) NOT NULL COMMENT 'Type of event (e.g., UPLOAD, PURCHASE)',
+              CREDITS_SPENT         NUMBER(38,0),
+              TRANSACTION_TIMESTAMP TIMESTAMP_NTZ NOT NULL
+          );
+    Create DAB_SEMANTIC_VIEW:
+      type: "sql-executor"
+      parameters:
+        componentName: "Create DAB_SEMANTIC_VIEW"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: |-
+          CREATE OR REPLACE VIEW SOCIAL.DATA_BANKING.DAB_SEMANTIC_VIEW AS
+          SELECT
+            a."ASSET_SK",
+            a."ASSET_NAME",
+            t."ASSET_TYPE_NAME" as "ASSET_TYPE",
+            a."GRAPH_ROLE",
+            f."TRANSACTION_TYPE",
+            f."TRANSACTION_TIMESTAMP" as "TRANSACTION_TIME",
+            u."USER_NK" as "USER_ID",
+            SUM(f."CREDITS_SPENT") as "TOTAL_CREDITS_SPENT",
+            COUNT(f."TRANSACTION_PK") as "TRANSACTION_COUNT"
+          FROM SOCIAL.DATA_BANKING.FCT_ASSET_TRANSACTIONS f
+          JOIN SOCIAL.DATA_BANKING.DIM_ASSETS a ON f."ASSET_SK" = a."ASSET_SK"
+          JOIN SOCIAL.DATA_BANKING.DIM_ASSET_TYPES t ON a."ASSET_TYPE_SK" = t."ASSET_TYPE_SK"
+          LEFT JOIN SOCIAL.DATA_BANKING.DIM_USERS u ON f."BUYER_USER_SK" = u."USER_SK"
+          GROUP BY 1,2,3,4,5,6,7;
+design:
+  components:
+    Create DATA_BANKING Schema:
+      position:
+        x: 200
+        "y": 0
+      tempMetlId:
+    Start:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId:
+    Create DIM_ASSET_TYPES Table:
+      position:
+        x: 400
+        "y": 0
+      tempMetlId:
+    Create DIM_USERS Table:
+      position:
+        x: 600
+        "y": 0
+      tempMetlId:
+    Create DIM_ASSETS Table:
+      position:
+        x: 800
+        "y": 0
+      tempMetlId:
+    Create FCT_ASSET_TRANSACTIONS Table:
+      position:
+        x: 1000
+        "y": 0
+      tempMetlId:
+    Create DAB_SEMANTIC_VIEW:
+      position:
+        x: 1200
+        "y": 0
+      tempMetlId:

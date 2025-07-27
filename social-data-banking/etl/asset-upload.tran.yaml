@@ -1,0 +1,158 @@
+type: "transformation"
+version:
+pipeline:
+  components:
+    Sample Asset Upload Data:
+      type: "fixed-flow"
+      parameters:
+        componentName: "Sample Asset Upload Data"
+        columns:
+        - - "S3_KEY"
+          - "VARCHAR"
+          - "255"
+          - "0"
+        - - "ASSET_NAME"
+          - "VARCHAR"
+          - "255"
+          - "0"
+        - - "ASSET_TYPE_NAME"
+          - "VARCHAR"
+          - "50"
+          - "0"
+        - - "UPLOAD_TIMESTAMP"
+          - "TIMESTAMP"
+          - "0"
+          - "0"
+        values:
+        - - "sample-asset-123.jpg"
+          - "Sample Asset"
+          - "generic"
+          - "2023-10-15 10:30:00"
+    Check Asset Type Exists:
+      type: "sql"
+      sources:
+      - "Sample Asset Upload Data"
+      parameters:
+        componentName: "Check Asset Type Exists"
+        query: "WITH asset_type_check AS (\n  SELECT \n    \"S3_KEY\",\n    \"ASSET_NAME\"\
+          ,\n    \"ASSET_TYPE_NAME\",\n    \"UPLOAD_TIMESTAMP\",\n    (SELECT \"ASSET_TYPE_SK\"\
+          \ FROM SOCIAL.DATA_BANKING.DIM_ASSET_TYPES WHERE \"ASSET_TYPE_NAME\" = t.\"\
+          ASSET_TYPE_NAME\") AS \"ASSET_TYPE_SK\"\n  FROM $T{Sample Asset Upload Data}\
+          \ t\n)\n\nSELECT \n  a.\"S3_KEY\",\n  a.\"ASSET_NAME\",\n  a.\"ASSET_TYPE_NAME\"\
+          ,\n  a.\"UPLOAD_TIMESTAMP\",\n  COALESCE(\n    a.\"ASSET_TYPE_SK\",\n  \
+          \  (SELECT \"ASSET_TYPE_SK\" FROM SOCIAL.DATA_BANKING.DIM_ASSET_TYPES WHERE\
+          \ \"ASSET_TYPE_NAME\" = a.\"ASSET_TYPE_NAME\")\n  ) AS \"ASSET_TYPE_SK\"\
+          \nFROM asset_type_check a"
+    Insert Asset Type:
+      type: "sql"
+      sources:
+      - "Check Asset Type Exists"
+      parameters:
+        componentName: "Insert Asset Type"
+        query: "SELECT \n  \"S3_KEY\",\n  \"ASSET_NAME\",\n  \"ASSET_TYPE_NAME\",\n\
+          \  \"UPLOAD_TIMESTAMP\",\n  \"ASSET_TYPE_SK\"\nFROM $T{Check Asset Type\
+          \ Exists}"
+    Insert Asset:
+      type: "sql"
+      sources:
+      - "Insert Asset Type"
+      parameters:
+        componentName: "Insert Asset"
+        query: "SELECT \n  \"S3_KEY\",\n  \"ASSET_NAME\",\n  \"ASSET_TYPE_SK\",\n\
+          \  NULL AS \"CURRENT_OWNER_USER_SK\",\n  NULL AS \"GRAPH_ROLE\",\n  \"UPLOAD_TIMESTAMP\"\
+          \nFROM $T{Insert Asset Type}"
+    Insert Into DIM_ASSETS:
+      type: "table-output"
+      sources:
+      - "Insert Asset"
+      parameters:
+        componentName: "Insert Into DIM_ASSETS"
+        warehouse: "[Environment Default]"
+        database: "SOCIAL"
+        schema: "DATA_BANKING"
+        targetTable: "DIM_ASSETS"
+        fixDataTypeMismatches: "Yes"
+        outputMode: "Append"
+        columnMapping:
+        - - "S3_KEY"
+          - "S3_KEY"
+        - - "ASSET_NAME"
+          - "ASSET_NAME"
+        - - "ASSET_TYPE_SK"
+          - "ASSET_TYPE_SK"
+        - - "CURRENT_OWNER_USER_SK"
+          - "CURRENT_OWNER_USER_SK"
+        - - "GRAPH_ROLE"
+          - "GRAPH_ROLE"
+        - - "UPLOAD_TIMESTAMP"
+          - "UPLOAD_TIMESTAMP"
+    Create Transaction Record:
+      type: "sql"
+      sources:
+      - "Insert Into DIM_ASSETS"
+      parameters:
+        componentName: "Create Transaction Record"
+        query: "SELECT \n  (SELECT \"ASSET_SK\" FROM SOCIAL.DATA_BANKING.DIM_ASSETS\
+          \ WHERE \"S3_KEY\" = 'sample-asset-123.jpg') AS \"ASSET_SK\",\n  NULL AS\
+          \ \"BUYER_USER_SK\",\n  'UPLOAD' AS \"TRANSACTION_TYPE\",\n  NULL AS \"\
+          CREDITS_SPENT\",\n  '2023-10-15 10:30:00'::TIMESTAMP_NTZ AS \"TRANSACTION_TIMESTAMP\""
+    Insert Into FCT_ASSET_TRANSACTIONS:
+      type: "table-output"
+      sources:
+      - "Create Transaction Record"
+      parameters:
+        componentName: "Insert Into FCT_ASSET_TRANSACTIONS"
+        warehouse: "[Environment Default]"
+        database: "SOCIAL"
+        schema: "DATA_BANKING"
+        targetTable: "FCT_ASSET_TRANSACTIONS"
+        fixDataTypeMismatches: "Yes"
+        outputMode: "Append"
+        columnMapping:
+        - - "ASSET_SK"
+          - "ASSET_SK"
+        - - "BUYER_USER_SK"
+          - "BUYER_USER_SK"
+        - - "TRANSACTION_TYPE"
+          - "TRANSACTION_TYPE"
+        - - "CREDITS_SPENT"
+          - "CREDITS_SPENT"
+        - - "TRANSACTION_TIMESTAMP"
+          - "TRANSACTION_TIMESTAMP"
+design:
+  components:
+    Sample Asset Upload Data:
+      position:
+        x: 0
+        "y": 200
+      tempMetlId:
+    Check Asset Type Exists:
+      position:
+        x: 200
+        "y": 0
+      tempMetlId:
+    Insert Asset Type:
+      position:
+        x: 400
+        "y": 0
+      tempMetlId:
+    Insert Asset:
+      position:
+        x: 600
+        "y": 0
+      tempMetlId:
+    Insert Into DIM_ASSETS:
+      position:
+        x: 800
+        "y": 0
+      tempMetlId:
+    Create Transaction Record:
+      position:
+        x: 1000
+        "y": 0
+      tempMetlId:
+    Insert Into FCT_ASSET_TRANSACTIONS:
+      position:
+        x: 1200
+        "y": 0
+      tempMetlId:
