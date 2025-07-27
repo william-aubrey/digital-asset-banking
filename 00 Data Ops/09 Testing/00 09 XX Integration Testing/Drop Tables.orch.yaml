@@ -1,0 +1,76 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Delete raw Tables"
+        - "Delete clean Tables"
+      parameters:
+        componentName: "Start"
+    Delete raw Tables:
+      type: "delete-tables"
+      parameters:
+        componentName: "Delete raw Tables"
+        database: "PRX_DEV_WILLIAM"
+        schema: "RAW_NIELSEN"
+        targetTable:
+        - "FCT"
+        - "FCT_CLEAN_SCD"
+        - "FCT_SEP"
+        - "FCT_STORE_LEVEL"
+        - "FCT_STORE_LEVEL_CLEAN_SCD"
+        - "FCT_STORE_LEVEL_SEP"
+        - "MRKT_REF"
+        - "MRKT_REF_CLEAN_SCD"
+        - "PRD_REF"
+        - "PRD_REF_CLEAN_SCD"
+        - "PRD_REF_STORE_LEVEL"
+        - "PRDC_REF"
+        - "PRDC_REF_CLEAN_SCD"
+        - "PRDC_REF_STORE_LEVEL"
+        - "PRDC_REF_STORE_LEVEL_CLEAN_SCD"
+        - "STR_REF_STORE_LEVEL"
+        - "STR_REF_STORE_LEVEL_CLEAN_SCD"
+        ignoreMissing: "Yes"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Delete clean Tables:
+      type: "delete-tables"
+      parameters:
+        componentName: "Delete clean Tables"
+        database: "PRX_DEV_WILLIAM"
+        schema: "CLEAN_NIELSEN"
+        targetTable:
+        - "FCT"
+        - "FCT_STORE_LEVEL"
+        - "MRKT_REF"
+        - "PRD_REF"
+        - "PRD_REF_STORE_LEVEL"
+        - "PRDC_REF"
+        - "PRDC_REF_STORE_LEVEL"
+        - "STR_REF_STORE_LEVEL"
+        ignoreMissing: "Yes"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+design:
+  components:
+    Start:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 1
+    Delete raw Tables:
+      position:
+        x: 170
+        "y": 0
+      tempMetlId: 2
+    Delete clean Tables:
+      position:
+        x: 180
+        "y": 130
+      tempMetlId: 3

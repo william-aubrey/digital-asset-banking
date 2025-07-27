@@ -1,0 +1,296 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    FILTER TABLES:
+      type: "remove-from-grid"
+      transitions:
+        success:
+        - "Print Variables"
+      skipped: false
+      parameters:
+        componentName: "FILTER TABLES"
+        targetGridVariable: "gv_file_extracts"
+        operation: "In"
+        keyColumns:
+        - "FILE_KEY"
+        valuesGrid:
+        - - "Proximo_spirits_extract_fct.txt.gz"
+        - - "Proximo_spirits_extract_mrkt_ref.txt.gz"
+        - - "Proximo_spirits_extract_prd_ref.txt.gz"
+        - - "Proximo_spirits_extract_prdc_ref.txt.gz"
+        - - "proximo_spirits_store_level_extract_fct.txt.gz"
+        - - "proximo_spirits_store_level_extract_prdc_ref.txt.gz"
+        - - "proximo_spirits_store_level_extract_str_ref.txt.gz"
+        - - "proximo_spirits_store_level_extract_prd_ref.txt.gz"
+    "00 02 02 Create Tables":
+      type: "run-orchestration"
+      skipped: false
+      parameters:
+        componentName: "00 02 02 Create Tables"
+        orchestrationJob: "00 Data Ops/02 Create Snowflake Object Hierarchy/All RAW\
+          \ and CLEAN Tables/00 02 02 Create Tables.orch.yaml"
+        setScalarVariables:
+        - - "jv_SCHEMA_TYPE"
+          - "${jv_SCHEMA_TYPE}"
+        - - "jv_SOR_KEY"
+          - "${jv_SOR_KEY}"
+        - - "jv_TABLE_NAME"
+          - "${jv_TABLE_NAME}"
+        setGridVariables:
+    Grid Iterator 0:
+      type: "grid-iterator"
+      iterationTarget: "00 02 02 Create Tables"
+      skipped: false
+      parameters:
+        componentName: "Grid Iterator 0"
+        gridVariable: "gv_file_extracts"
+        gridIteratorVariableMapping:
+        - - "TABLE_NAME"
+          - "jv_TABLE_NAME"
+        - - "SOR_KEY"
+          - "jv_SOR_KEY"
+        - - "FILE_KEY"
+          - "jv_FILE_KEY"
+        breakOnFailure: "No"
+        concurrency: "Sequential"
+    Fixed Iterator 0:
+      type: "fixed-iterator"
+      iterationTarget: "Grid Iterator 0"
+      skipped: false
+      parameters:
+        componentName: "Fixed Iterator 0"
+        concurrency: "Sequential"
+        variablesToIterate:
+        - "jv_SCHEMA_TYPE"
+        iterationValues:
+        - - "RAW"
+        - - "CLEAN"
+        breakOnFailure: "No"
+    gv_file_extracts:
+      type: "query-to-grid"
+      transitions:
+        success:
+        - "FILTER SORs"
+      skipped: false
+      parameters:
+        componentName: "gv_file_extracts"
+        mode: "Advanced"
+        query: "SELECT \nSOR_KEY,\nFILE_KEY,\nSF_SOURCE_TABLE_NAME\nFROM ${ev_database}.${ev_controls_schema}.CTRL_FILE_EXTRACTS\n\
+          WHERE FILE_FUNCTION IN ('SINGLE FILE EXTRACT','MULTI FILE EXTRACT')\nAND\
+          \ IS_ACTIVE = TRUE\nAND SF_SOURCE_TABLE_NAME IS NOT NULL"
+        gridVariable: "gv_file_extracts"
+        gridVariableMapping:
+        - - "SOR_KEY"
+          - "SOR_KEY"
+        - - "SF_SOURCE_TABLE_NAME"
+          - "TABLE_NAME"
+        - - "FILE_KEY"
+          - "FILE_KEY"
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "gv_file_extracts"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    FILTER SORs:
+      type: "remove-from-grid"
+      transitions:
+        success:
+        - "FILTER TABLES"
+      skipped: false
+      parameters:
+        componentName: "FILTER SORs"
+        targetGridVariable: "gv_file_extracts"
+        operation: "In"
+        keyColumns:
+        - "SOR_KEY"
+        valuesGrid:
+        - - "NIELSEN"
+    Print Variables:
+      type: "print-variables"
+      transitions:
+        success:
+        - "Fixed Iterator 0"
+      parameters:
+        componentName: "Print Variables"
+        variablesToPrint:
+        - - "gv_file_extracts"
+        prefixText:
+        includeVariableName: "No"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    jv_TABLE_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_SOR_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_SCHEMA_TYPE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_SCHEMA_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_FILE_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    gv_file_extracts:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          SOR_KEY:
+            columnType: "TEXT"
+          TABLE_NAME:
+            columnType: "TEXT"
+          FILE_KEY:
+            columnType: "TEXT"
+      defaultValue:
+      - - "SPECTRA"
+        - "PROFILES"
+        - ""
+    gv_column_layout:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          FIELD_NAME:
+            columnType: "TEXT"
+          DATA_TYPE:
+            columnType: "TEXT"
+          SIZE:
+            columnType: "TEXT"
+          PRECISION:
+            columnType: "TEXT"
+          DEFAULT_VALUE:
+            columnType: "TEXT"
+          NOT_NULL:
+            columnType: "TEXT"
+          IS_UNIQUE:
+            columnType: "TEXT"
+          COMMENT:
+            columnType: "TEXT"
+      defaultValue: []
+design:
+  components:
+    FILTER TABLES:
+      position:
+        x: 340
+        "y": -100
+      tempMetlId: 2987
+    "00 02 02 Create Tables":
+      position:
+        x: 736
+        "y": -40
+      tempMetlId: 2988
+    Grid Iterator 0:
+      position:
+        x: 770
+        "y": -140
+      tempMetlId: 2989
+    Fixed Iterator 0:
+      position:
+        x: 770
+        "y": -140
+      tempMetlId: 2990
+    gv_file_extracts:
+      position:
+        x: -50
+        "y": -100
+      tempMetlId: 2991
+    Start 0:
+      position:
+        x: -190
+        "y": -100
+      tempMetlId: 2992
+    FILTER SORs:
+      position:
+        x: 160
+        "y": -100
+      tempMetlId: 2993
+    Print Variables:
+      position:
+        x: 540
+        "y": -100
+      tempMetlId: 2994
+  notes:
+    "2984":
+      position:
+        x: -120
+        "y": -340
+      size:
+        height: 363
+        width: 185
+      theme: "green"
+      content: "This includes all systems and tables.  Limit the systems and/or tables\
+        \ to be created by adjusting the following two \"Remove from Grid\" components"
+    "2985":
+      position:
+        x: 270
+        "y": -220
+      size:
+        height: 237
+        width: 180
+      theme: "yellow"
+      content: "Use this to run the job for one or more specific tables."
+    "2986":
+      position:
+        x: 90
+        "y": -220
+      size:
+        height: 247
+        width: 170
+      theme: "yellow"
+      content: "Use this to run the job for one or more specific tables."
+    "3667013":
+      position:
+        x: 690
+        "y": -340
+      size:
+        height: 350
+        width: 212
+      theme: "yellow"
+      content: |-
+        CLEAN or RAW Schemas?
+
+        If you only need to update one or both schemas, change that setting here.  Include the word CLEAN and / or RAW in the fixed field component.
+    "3884735":
+      position:
+        x: -522
+        "y": -274
+      size:
+        height: 334
+        width: 296
+      theme: "red"
+      content: |-
+        2024-12-10 ERROR
+        There is currently an error in the processing of the table creation. The ordinal position of the column names is not being enforced in the CREATE TABLE component.  Probably need to update the software.

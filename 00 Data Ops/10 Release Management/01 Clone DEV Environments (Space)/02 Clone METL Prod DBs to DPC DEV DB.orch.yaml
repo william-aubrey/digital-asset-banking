@@ -1,0 +1,286 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Append To Grid"
+      parameters:
+        componentName: "Start"
+    Target DB Schema Creation:
+      type: "sql-executor"
+      parameters:
+        componentName: "Target DB Schema Creation"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        variablesToInclude:
+        sqlScript: "CREATE SCHEMA ${jv_target_database}.${jv_target_schema} \r\nCLONE\
+          \ ${jv_source_database}.${jv_source_schema}"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Append To Grid:
+      type: "append-to-grid"
+      transitions:
+        success:
+        - "Grid Iterator"
+      parameters:
+        componentName: "Append To Grid"
+        operation: "Append"
+        targetGridVariable: "gv_clone_schemas_old_to_new_db"
+        valuesGrid:
+        - - "ANALYTICS_SOURCE_DEV"
+          - "ACTUAL_NSV_CLEAN"
+          - "CLEAN_ACTUAL_NSV"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "ACTUAL_NSV_RAW"
+          - "RAW_ACTUAL_NSV"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "AERA"
+          - "RAW_AERA"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "AERA_CLEAN"
+          - "CLEAN_AERA"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "BRANDACTIVATE_CLEAN"
+          - "CLEAN_BRANDACTIVATE"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "BRANDACTIVATE_RAW"
+          - "RAW_BRANDACTIVATE"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "BRANDSCOPIC_CLEAN"
+          - "CLEAN_BRANDSCOPIC"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "BRANDSCOPIC_RAW"
+          - "RAW_BRANDSCOPIC"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "CONTROLS"
+          - "CONTROLS"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "GREATVINES_CLEAN"
+          - "CLEAN_GREATVINES"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "GREATVINES_RAW"
+          - "RAW_GREATVINES"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "INTERNAL_MAP"
+          - "RAW_INTERNAL_MAP"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "INTERNAL_MAP_CLEAN"
+          - "CLEAN_INTERNAL_MAP"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "MAPPING_CLEAN"
+          - "CLEAN_MAPPING"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "MAPPING_RAW"
+          - "RAW_MAPPING"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "NABCA_CLEAN"
+          - "CLEAN_NABCA"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "NABCA_RAW"
+          - "RAW_NABCA"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "NIELSEN_CLEAN"
+          - "CLEAN_NIELSEN"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "NIELSEN_RAW"
+          - "RAW_NIELSEN"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "PENDLETON_MILITARY_CLEAN"
+          - "CLEAN_PENDLETON_MILITARY"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "PINATA_CLEAN"
+          - "CLEAN_PINATA"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "PLAN_CLEAN"
+          - "CLEAN_PLAN"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "PLAN_RAW"
+          - "RAW_PLAN"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "REFERENCE_CLEAN"
+          - "CLEAN_REFERENCE"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "REFERENCE_RAW"
+          - "RAW_REFERENCE"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "SAP_CLEAN"
+          - "CLEAN_SAP"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "SAP_RAW"
+          - "RAW_SAP"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "SPECTRA_CLEAN"
+          - "CLEAN_SPECTRA"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "SPECTRA_RAW"
+          - "RAW_SPECTRA"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "TDLINX_CLEAN"
+          - "CLEAN_TDLINX"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "TDLINX_RAW"
+          - "RAW_TDLINX"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "VIP_CLEAN"
+          - "CLEAN_VIP"
+        - - "ANALYTICS_SOURCE_DEV"
+          - "VIP_RAW"
+          - "RAW_VIP"
+        - - "ANALYTICS_WAREHOUSE_DEV"
+          - "ENTERPRISE"
+          - "ENTERPRISE"
+        - - "ANALYTICS_WAREHOUSE_DEV"
+          - "CURATED"
+          - "CURATED"
+        - - "ANALYTICS_WAREHOUSE_DEV"
+          - "TABLEAU"
+          - "TABLEAU"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Grid Iterator:
+      type: "grid-iterator"
+      transitions:
+        success:
+        - "Explicit Ownership Change"
+      iterationTarget: "Target DB Schema Creation"
+      parameters:
+        componentName: "Grid Iterator"
+        gridVariable: "gv_clone_schemas_old_to_new_db"
+        gridIteratorVariableMapping:
+        - - "SOURCE_DATABASE"
+          - "jv_source_database"
+        - - "SOURCE_SCHEMA"
+          - "jv_source_schema"
+        - - "TARGET_SCHEMA"
+          - "jv_target_schema"
+        breakOnFailure: "No"
+        concurrency: "Sequential"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Explicit Ownership Change:
+      type: "sql-executor"
+      parameters:
+        componentName: "Explicit Ownership Change"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        variablesToInclude:
+        sqlScript: "GRANT OWNERSHIP ON ALL SCHEMAS IN DATABASE ${jv_target_database}\
+          \ TO ROLE SVC_PRX_DPC_DEV_ROLE COPY CURRENT GRANTS;\r\nGRANT OWNERSHIP ON\
+          \ ALL TABLES IN DATABASE ${jv_target_database} TO ROLE SVC_PRX_DPC_DEV_ROLE\
+          \ COPY CURRENT GRANTS;\r\nGRANT OWNERSHIP ON ALL VIEWS IN DATABASE ${jv_target_database}\
+          \ TO ROLE SVC_PRX_DPC_DEV_ROLE COPY CURRENT GRANTS;\r\nGRANT OWNERSHIP ON\
+          \ ALL MATERIALIZED VIEWS IN DATABASE ${jv_target_database} TO ROLE SVC_PRX_DPC_DEV_ROLE\
+          \ COPY CURRENT GRANTS;"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    jv_source_schema:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "CLEAN_NIELSEN"
+    jv_source_database:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "ANALYTICS_SOURCE_DEV"
+    jv_target_database:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PRX_DEV_WILLIAM"
+    jv_target_schema:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "CLEAN_NIELSEN"
+    gv_clone_schemas_old_to_new_db:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          SOURCE_DATABASE:
+            columnType: "TEXT"
+          SOURCE_SCHEMA:
+            columnType: "TEXT"
+          TARGET_SCHEMA:
+            columnType: "TEXT"
+      defaultValue:
+      - - ""
+        - ""
+        - ""
+design:
+  components:
+    Start:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 1
+    Target DB Schema Creation:
+      position:
+        x: 300
+        "y": 0
+      tempMetlId: 2
+    Append To Grid:
+      position:
+        x: 150
+        "y": 0
+      tempMetlId: 4
+    Grid Iterator:
+      position:
+        x: 300
+        "y": -20
+      tempMetlId: 5
+    Explicit Ownership Change:
+      position:
+        x: 480
+        "y": 0
+      tempMetlId: 6
+  notes:
+    "1":
+      position:
+        x: -400
+        "y": -80
+      size:
+        height: 218
+        width: 300
+      theme: "light-green"
+      content: "This job will create the first clone of SOURCE and WAREHOUSE DB Schemas\
+        \ from OLD DBS to the new singular DEV DBs for individual developers and integration"
+    "2":
+      position:
+        x: -400
+        "y": 160
+      size:
+        height: 108
+        width: 300
+      theme: "yellow"
+      content: "1. Update the default value for the jv_target_database variable"
+    "3":
+      position:
+        x: 430
+        "y": -110
+      size:
+        height: 218
+        width: 300
+      theme: "red"
+      content: |-
+        Note 2025-06-23
+        Ownership change is inconsistent

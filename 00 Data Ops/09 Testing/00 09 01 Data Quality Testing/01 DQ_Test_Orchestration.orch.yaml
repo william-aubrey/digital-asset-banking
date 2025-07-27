@@ -1,0 +1,534 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Query Result To Grid"
+      parameters:
+        componentName: "Start"
+    Query Result To Grid:
+      type: "query-to-grid"
+      transitions:
+        success:
+        - "print grid"
+      parameters:
+        componentName: "Query Result To Grid"
+        mode: "Advanced"
+        gridVariable: "gv_Data_Quality_Tests"
+        gridVariableMapping:
+        - - "SOR_KEY"
+          - "SOR_KEY"
+        - - "FILE_KEY"
+          - "FILE_KEY"
+        - - "PROCESS_STEP"
+          - "PROCESS_STEP"
+        - - "SCHEMA_NAME"
+          - "SCHEMA_NAME"
+        - - "TABLE_NAME"
+          - "TABLE_NAME"
+        - - "TEST_INDEX"
+          - "TEST_INDEX"
+        - - "TEST_NAME"
+          - "TEST_NAME"
+        - - "TEST_DESCRIPTION"
+          - "TEST_DESCRIPTION"
+        - - "TEST_CATEGORY"
+          - "TEST_CATEGORY"
+        - - "TEST_SQL_QUERY"
+          - "TEST_SQL_QUERY"
+        - - "RESULT_TYPE"
+          - "RESULT_TYPE"
+        - - "RESULT_VALUE_EXPECTED"
+          - "RESULT_VALUE_EXPECTED"
+        - - "ACTIVE_FLAG"
+          - "ACTIVE_FLAG"
+        query: "SELECT\r\nSOR_KEY,\r\nFILE_KEY,\r\nPROCESS_STEP,\r\nSCHEMA_NAME,\r\
+          \nTABLE_NAME,\r\nTEST_INDEX,\r\nTEST_NAME,\r\nTEST_DESCRIPTION,\r\nTEST_CATEGORY,\r\
+          \nREPLACE(\r\n      TEST_SQL_QUERY,\r\n      'DATABASE_NAME', \r\n     \
+          \ '${ev_database}'\r\n    ) AS TEST_SQL_QUERY,\r\nRESULT_TYPE,\r\nRESULT_VALUE_EXPECTED,\r\
+          \nACTIVE_FLAG\r\nFROM ${ev_database}.${ev_controls_schema}.CTRL_TEST_DQ_TESTS\r\
+          \nWHERE FILE_KEY = '${jv_FILE_KEY}'\r\nAND PROCESS_STEP = '${jv_PROCESS_STEP}'\r\
+          \nAND ACTIVE_FLAG = 'TRUE'\r\nORDER BY TEST_INDEX"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Grid Iterator:
+      type: "grid-iterator"
+      transitions:
+        success:
+        - "Query Result To Scalar"
+      iterationTarget: "Run DQ_Test_Execution"
+      parameters:
+        componentName: "Grid Iterator"
+        gridVariable: "gv_Data_Quality_Tests"
+        gridIteratorVariableMapping:
+        - - "SOR_KEY"
+          - "jv_SOR_KEY"
+        - - "FILE_KEY"
+          - "jv_FILE_KEY"
+        - - "PROCESS_STEP"
+          - "jv_PROCESS_STEP"
+        - - "SCHEMA_NAME"
+          - "jv_SCHEMA_NAME"
+        - - "TABLE_NAME"
+          - "jv_TABLE_NAME"
+        - - "TEST_INDEX"
+          - "jv_TEST_INDEX"
+        - - "TEST_NAME"
+          - "jv_TEST_NAME"
+        - - "TEST_DESCRIPTION"
+          - "jv_TEST_DESCRIPTION"
+        - - "TEST_CATEGORY"
+          - "jv_TEST_CATEGORY"
+        - - "TEST_SQL_QUERY"
+          - "jv_TEST_SQL_QUERY"
+        - - "RESULT_TYPE"
+          - "jv_RESULT_TYPE"
+        - - "RESULT_VALUE_EXPECTED"
+          - "jv_RESULT_VALUE_EXPECTED"
+        - - "ACTIVE_FLAG"
+          - "jv_ACTIVE_FLAG"
+        breakOnFailure: "No"
+        concurrency: "Sequential"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Run DQ_Test_Execution:
+      type: "run-transformation"
+      parameters:
+        componentName: "Run DQ_Test_Execution"
+        transformationJob: "00 Data Ops/09 Testing/00 09 01 Data Quality Testing/02\
+          \ DQ_Test_Execution.tran.yaml"
+        setScalarVariables:
+        - - "jv_TABLE_NAME"
+          - "${jv_TABLE_NAME}"
+        - - "jv_TEST_SQL_QUERY"
+          - "${jv_TEST_SQL_QUERY}"
+        - - "jv_TEST_DESCRIPTION"
+          - "${jv_TEST_DESCRIPTION}"
+        - - "jv_RESULT_TYPE"
+          - "${jv_RESULT_TYPE}"
+        - - "jv_SOR_KEY"
+          - "${jv_SOR_KEY}"
+        - - "jv_TEST_INDEX"
+          - "${jv_TEST_INDEX}"
+        - - "jv_RESULT_VALUE_EXPECTED"
+          - "${jv_RESULT_VALUE_EXPECTED}"
+        - - "jv_SCHEMA_NAME"
+          - "${jv_SCHEMA_NAME}"
+        - - "jv_SCHEMA_NAME"
+          - "${jv_SCHEMA_NAME}"
+        - - "jv_TEST_CATEGORY"
+          - "${jv_TEST_CATEGORY}"
+        - - "jv_FILE_KEY"
+          - "${jv_FILE_KEY}"
+        - - "jv_TEST_NAME"
+          - "${jv_TEST_NAME}"
+        - - "jv_FILE_DATE"
+          - "${jv_FILE_DATE}"
+        - - "jv_PROCESS_STEP"
+          - "${jv_PROCESS_STEP}"
+        setGridVariables:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Query Result To Scalar:
+      type: "query-to-scalar"
+      transitions:
+        success:
+        - "If"
+      parameters:
+        componentName: "Query Result To Scalar"
+        mode: "Advanced"
+        query: "SELECT \r\n  CASE \r\n    WHEN COUNT(CASE WHEN TEST_STATUS = 'FAIL'\
+          \ THEN 1 END) > 0 THEN 'FAIL'\r\n    ELSE 'PASS'\r\n  END as STATUS_OVERALL\r\
+          \nFROM ${ev_database}.${ev_controls_schema}.CTRL_TEST_DQ_RESULTS\r\nWHERE\
+          \ FILE_KEY = '${jv_FILE_KEY}'\r\nAND FILE_DATE = '${jv_FILE_DATE}'"
+        scalarVariableMapping:
+        - - "jv_TEST_STATUS_OVERALL"
+          - "STATUS_OVERALL"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+        - - "jv_TEST_STATUS_OVERALL"
+          - "${jv_TEST_STATUS_OVERALL}"
+    Print Variables:
+      type: "print-variables"
+      parameters:
+        componentName: "Print Variables"
+        variablesToPrint:
+        - - "jv_TEST_STATUS_OVERALL"
+        prefixText:
+        includeVariableName: "Yes"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    If:
+      type: "if"
+      transitions:
+        "true":
+        - "Print Variables"
+        "false":
+        - "Log update to Load History on failed DQ for file"
+      parameters:
+        componentName: "If"
+        mode: "Simple"
+        condition:
+        - - "jv_TEST_STATUS_OVERALL"
+          - "Is"
+          - "Equal to"
+          - "PASS"
+        combineConditions: "And"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Log update to Load History on failed DQ for file:
+      type: "sql-executor"
+      parameters:
+        componentName: "Log update to Load History on failed DQ for file"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        variablesToInclude:
+        sqlScript: "UPDATE\r\n  ${ev_database}.${ev_controls_schema}.CTRL_LOAD_HISTORY\r\
+          \nSET\r\n  PROCESS_STATUS = 'FAIL',\r\n  PROCESS_NOTE = PROCESS_NOTE ||';'||\
+          \ ' DQ Test(s) Failed'\r\nWHERE\r\n  SOR_KEY = '${jv_SOR_KEY}'\r\n  AND\
+          \ FILE_KEY = '${jv_FILE_KEY}'\r\n  AND FILE_DATE = '${jv_FILE_DATE}'\r\n\
+          \  AND PROCESS_STEP = '${jv_PROCESS_STEP}'\r\n  AND PROCESS_STATUS = 'SUCCESS';"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    print grid:
+      type: "print-variables"
+      transitions:
+        success:
+        - "Grid Iterator"
+      parameters:
+        componentName: "print grid"
+        variablesToPrint:
+        - - "gv_Data_Quality_Tests"
+        prefixText:
+        includeVariableName: "Yes"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    jv_TEST_SQL_QUERY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Select current_date()"
+    jv_SOR_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "SYNTHETIC"
+    jv_TEST_INDEX:
+      metadata:
+        type: "NUMBER"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "1"
+    jv_FILE_DATE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "2025-07-10"
+    jv_SCHEMA_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "CONTROLS"
+    jv_TEST_STATUS_OVERALL:
+      metadata:
+        type: "TEXT"
+        description: "Given the full set of all tests for a specific table on a specific\
+          \ date, what was the overall status of all tests?  If any individual test\
+          \ failed, then the table is considered failed."
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "FRANKENSTEIN"
+    jv_PROCESS_STEP:
+      metadata:
+        type: "TEXT"
+        description: "This variable is used for logging to CTRL_LOAD_HISTORY.  The\
+          \ three valid values are STAGE, LAND and CLEAN."
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "Value for Validation Purposes Only"
+    jv_TABLE_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "PRODUCT_DATA"
+    jv_TEST_DESCRIPTION:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Test for NULLs"
+    jv_RESULT_TYPE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "EXACT_SCALAR"
+    jv_RESULT_VALUE_EXPECTED:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "0"
+    jv_TEST_CATEGORY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Completeness"
+    jv_FILE_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "Product_Data.csv"
+    jv_ACTIVE_FLAG:
+      metadata:
+        type: "NUMBER"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "1"
+    jv_TEST_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Testing"
+    gv_Data_Quality_Tests:
+      metadata:
+        type: "GRID"
+        description: "The grid variable holding the attributes to execute data quality\
+          \ tests on raw, clean or modeled tables."
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          SOR_KEY:
+            columnType: "TEXT"
+          FILE_KEY:
+            columnType: "TEXT"
+          PROCESS_STEP:
+            columnType: "TEXT"
+          SCHEMA_NAME:
+            columnType: "TEXT"
+          TABLE_NAME:
+            columnType: "TEXT"
+          TEST_INDEX:
+            columnType: "NUMBER"
+          TEST_NAME:
+            columnType: "TEXT"
+          TEST_DESCRIPTION:
+            columnType: "TEXT"
+          TEST_CATEGORY:
+            columnType: "TEXT"
+          TEST_SQL_QUERY:
+            columnType: "TEXT"
+          RESULT_TYPE:
+            columnType: "TEXT"
+          RESULT_VALUE_EXPECTED:
+            columnType: "TEXT"
+          ACTIVE_FLAG:
+            columnType: "TEXT"
+      defaultValue: []
+design:
+  components:
+    Start:
+      position:
+        x: -140
+        "y": 340
+      tempMetlId: 1
+    Query Result To Grid:
+      position:
+        x: 60
+        "y": 340
+      tempMetlId: 5
+    Grid Iterator:
+      position:
+        x: 560
+        "y": 320
+      tempMetlId: 6
+    Run DQ_Test_Execution:
+      position:
+        x: 560
+        "y": 320
+      tempMetlId: 7
+    Query Result To Scalar:
+      position:
+        x: 1020
+        "y": 340
+      tempMetlId: 8
+    Print Variables:
+      position:
+        x: 1700
+        "y": 260
+      tempMetlId: 9
+    If:
+      position:
+        x: 1480
+        "y": 340
+      tempMetlId: 10
+    Log update to Load History on failed DQ for file:
+      position:
+        x: 1700
+        "y": 390
+      tempMetlId: 11
+    print grid:
+      position:
+        x: 230
+        "y": 340
+      tempMetlId: 14
+  notes:
+    "1":
+      position:
+        x: -720
+        "y": 40
+      size:
+        height: 788
+        width: 560
+      theme: "yellow"
+      content: |-
+        #### 01 DQ_Test_Orchestration
+
+        ##### **Objective**
+
+        This orchestration pipeline provides a framework for executing data quality tests against database tables.
+
+        - Retrieves test definitions from a control table
+        - Executes SQL-based data quality tests against target tables
+        - Evaluates test results against expected values
+        - Records test outcomes (PASS/FAIL) in a results table
+        - Supports multiple data quality dimensions (completeness, uniqueness, timeliness, validity, accuracy, consistency)
+
+        ##### **Logic**
+
+        1. **Test Definition Retrieval**: The pipeline queries the CTRL_TEST_DQ_TESTS table to retrieve active test definitions for a specified file key and process step
+        2. **Test Execution Loop**: Using a Grid Iterator, the pipeline processes each test definition sequentially
+        3. **Test Execution**: For each test, the pipeline:
+           - Passes test parameters to the DQ_Test_Execution transformation job
+           - Executes the test SQL query
+           - Compares actual results with expected results
+           - Determines test status (PASS/FAIL)
+           - Records results in the CTRL_TEST_DQ_RESULTS table
+        4. **Overall Status Determination**: After all tests are executed, the pipeline determines the overall status (PASS/FAIL)
+        5. **Status Handling**: Based on the overall status:
+           - If PASS: Displays a success message
+           - If FAIL: Updates the CTRL_LOAD_HISTORY table to mark the process as failed
+
+        ##### **Variables usage**
+        |Variable | Purpose |
+        |---------|---------|
+        |jv_SOR_KEY | Source system identifier |
+        |jv_FILE_KEY | File or data source identifier |
+        |jv_SCHEMA_NAME | Schema containing the table to test |
+        |jv_TABLE_NAME | Table to be tested |
+        |jv_TEST_INDEX | Unique identifier for the test |
+        |jv_TEST_NAME | Descriptive name of the test |
+        |jv_TEST_DESCRIPTION | Detailed description of what the test checks |
+        |jv_TEST_CATEGORY | Data quality dimension (e.g., Completeness, Uniqueness) |
+        |jv_TEST_SQL_QUERY | SQL query that performs the test |
+        |jv_RESULT_TYPE | Type of result comparison (currently supports EXACT_SCALAR) |
+        |jv_RESULT_VALUE_EXPECTED | Expected value from the test query |
+        |jv_ACTIVE_FLAG | Flag indicating if the test is active |
+        |jv_FILE_DATE | Date associated with the file being tested |
+        |jv_PROCESS_STEP | Processing stage (LAND, CLEAN) being tested |
+        |jv_TEST_STATUS_OVERALL | Overall status of all tests (PASS/FAIL) |
+        |gv_Data_Quality_Tests | Grid variable storing all test definitions |
+
+        ##### **Maintenance**
+        | ID | Topic | Maintenance Description |
+        |----|-------|-------------------------|
+        |M1| Test Definition Updates | Periodically review and update test definitions in the CTRL_TEST_DQ_TESTS table to ensure they remain relevant |
+        |M2| Result Cleanup | Implement a cleanup strategy for the CTRL_TEST_DQ_RESULTS table to prevent excessive growth |
+        |M3| Query Optimization | Review and optimize SQL queries in the control table to ensure efficient execution |
+        |M4| Result Type Support | Currently only supports EXACT_SCALAR comparison; may need maintenance if new comparison types are added |
+        |M5| Load History Integration | Ensure the integration with CTRL_LOAD_HISTORY remains compatible if that table structure changes |
+
+        ##### **Improvement opportunities**
+        | ID | Topic | Improvement Description |
+        |----|-------|-------------------------|
+        |I1| Additional Result Types | Extend the framework to support more comparison types (e.g., RANGE, PATTERN_MATCH, THRESHOLD) |
+        |I2| Test Grouping | Implement test grouping to allow running subsets of tests based on category or priority |
+        |I3| Parallel Execution | Modify the Grid Iterator to support concurrent test execution for improved performance |
+        |I4| Reporting Dashboard | Create a reporting dashboard to visualize test results and trends over time |
+        |I5| Alerting Integration | Add notification capabilities for failed tests |
+        |I6| Dynamic Test Generation | Implement functionality to automatically generate common tests based on table metadata |
+    "2":
+      position:
+        x: -50
+        "y": 20
+      size:
+        height: 470
+        width: 420
+      theme: "white"
+      content: |-
+        ### **Query Result To Grid**
+
+        The **Query Result To Grid** component is designed to execute a SQL query and populate a grid variable named `gv_Data_Quality_Tests`. The query retrieves data quality test configurations from the `CTRL_TEST_DQ_TESTS` control table, specifically filtering for a specific `FILE_KEY` and `PROCESS_STEP` where the test is active. The retrieved columns include test metadata such as source key, schema name, table name, test index, test name, description, category, SQL query, result type, expected value, and active flag. This component prepares the grid variable with all relevant data quality test details that will be subsequently iterated and executed by the **Grid Iterator** component in the pipeline.
+    "3":
+      position:
+        x: 830
+        "y": 20
+      size:
+        height: 470
+        width: 430
+      theme: "white"
+      content: |-
+        ### **Query Result To Scalar**
+
+        The **Query Result To Scalar** component executes a SQL query to determine the overall status of data quality tests for a specific file. It checks the `CTRL_TEST_DQ_RESULTS` table to aggregate test results, using a CASE statement to evaluate the test outcomes. If any test has a 'FAIL' status, the overall status is set to 'FAIL'; otherwise, it's set to 'PASS'. The result is stored in the scalar variable `jv_TEST_STATUS_OVERALL`, which will be used in subsequent components to decide whether to proceed with the pipeline or log a failure in the load history. This component provides a critical decision-making mechanism for data quality validation by condensing multiple test results into a single, binary status indicator.
+    "5":
+      position:
+        x: 390
+        "y": 30
+      size:
+        height: 450
+        width: 410
+      theme: "white"
+      content: |
+        ### **Grid Iterator**
+        The **Grid Iterator** component loops through each row in the `gv_Data_Quality_Tests` grid variable, sequentially mapping grid column values to individual scalar job variables (like `jv_SOR_KEY`, `jv_FILE_KEY`, etc.). It's configured to iterate through the grid and pass each row's data to the **Run DQ_Test_Execution** transformation job, enabling systematic execution of multiple data quality tests defined in the control table.
+    "6":
+      position:
+        x: 1300
+        "y": 20
+      size:
+        height: 500
+        width: 700
+      theme: "white"
+      content: "### **RESULTS**\n- If the overall test status (`jv_TEST_STATUS_OVERALL`)\
+        \ is 'PASS', then route to 'Print Variables' where the value of `jv_TEST_STATUS_OVERALL`\
+        \ variable is printed to provide visibility into \n- If the overall test status\
+        \ (`jv_TEST_STATUS_OVERALL`) is 'FAIL', then route to 'Log update to Load\
+        \ History on failed DQ for file' where the PROCESS_STATUS for 'LAND' or 'CLEAN'\
+        \ process step for this specific file on this file date in the `CTRL_LOAD_HISTORY`\
+        \ table is updated to 'FAIL' and the PROCESS_NOTE is appended with  ';DQ Test(s)\
+        \ Failed'. (The specific record in CTRL_LOAD_HISTORY is targeted using `SOR_KEY`,\
+        \ `FILE_KEY`, `FILE_DATE`, and `PROCESS_STEP`)"

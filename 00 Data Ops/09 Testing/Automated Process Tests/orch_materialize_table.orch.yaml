@@ -1,0 +1,188 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Check if table exist"
+      parameters:
+        componentName: "Start"
+    End Success - CREATE:
+      type: "end-success"
+      parameters:
+        componentName: "End Success - CREATE"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Create table:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "End Success - CREATE"
+      parameters:
+        componentName: "Create table"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        variablesToInclude:
+        - "DATABASE"
+        - "ENV"
+        - "SCHEMA"
+        - "SOURCE_SCHEMA"
+        - "TEST_TARGET"
+        sqlScript: "CREATE OR REPLACE TABLE ${ev_database}.${ev_controls_schema}.${TEST_TARGET}\
+          \ AS\r\nSELECT *\r\nFROM ${ev_database}.${ev_controls_schema}.${TEST_TARGET}_VIEW;"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Check if table exist:
+      type: "assert-table"
+      transitions:
+        success:
+        - "Append new data"
+        failure:
+        - "Create table"
+      parameters:
+        componentName: "Check if table exist"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        tableName: "${TEST_TARGET}"
+        exists: "Yes"
+        tableMetadata:
+        rowCountComparisonType: "Equal To"
+        rowCountValue:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Append new data:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "End Success - INSERT"
+      parameters:
+        componentName: "Append new data"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        variablesToInclude:
+        - "DATABASE"
+        - "ENV"
+        - "SCHEMA"
+        - "SOURCE_SCHEMA"
+        - "TEST_TARGET"
+        sqlScript: "INSERT INTO ${ev_database}.${ev_controls_schema}.${TEST_TARGET}\
+          \  \r\nSELECT *\r\nFROM ${ev_database}.${ev_controls_schema}.${TEST_TARGET}_VIEW;"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    End Success - INSERT:
+      type: "end-success"
+      parameters:
+        componentName: "End Success - INSERT"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    TEST_TARGET:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+design:
+  components:
+    Start:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 1
+    End Success - CREATE:
+      position:
+        x: 550
+        "y": 130
+      tempMetlId: 2
+    Create table:
+      position:
+        x: 350
+        "y": 130
+      tempMetlId: 3
+    Check if table exist:
+      position:
+        x: 150
+        "y": 0
+      tempMetlId: 4
+    Append new data:
+      position:
+        x: 350
+        "y": 0
+      tempMetlId: 5
+    End Success - INSERT:
+      position:
+        x: 550
+        "y": 0
+      tempMetlId: 6
+  notes:
+    "1":
+      position:
+        x: -30
+        "y": -150
+      size:
+        height: 98
+        width: 700
+      theme: "light-green"
+      content: "##### Decide if the view data will be appended to an existent table\
+        \ or it will create a new table with it"
+    "2":
+      position:
+        x: -670
+        "y": -140
+      size:
+        height: 648
+        width: 620
+      theme: "white"
+      content: |-
+        #### Orchestration: Materialize Table
+
+        ##### **Objective**
+
+        This orchestration job materializes data from a view into a table, either by creating a new table or appending to an existing one.
+
+        - Checks if a target table exists in the specified schema
+        - Creates a new table from a view if the target doesn't exist
+        - Appends new data from the view to the existing table if it already exists
+        - Provides different success paths based on the action taken (CREATE or INSERT)
+
+        ##### **Logic**
+
+        1. The pipeline starts and checks if the target table exists
+        2. If the table doesn't exist:
+           - Creates a new table using the structure and data from the corresponding view
+           - Ends with "Success - CREATE" status
+        3. If the table exists:
+           - Appends new data from the view to the existing table
+           - Ends with "Success - INSERT" status
+
+        ##### **Variables usage**
+        |Variable | Purpose |
+        |---------|---------|
+        |TEST_TARGET | Name of the target table to be created or appended to |
+        |DATABASE | Database where the table and view reside |
+        |SCHEMA | Schema where the table and view reside |
+        |SOURCE_SCHEMA | Source schema (used in SQL but not directly referenced) |
+        |ENV | Environment variable (used in SQL but not directly referenced) |
+
+        ##### **Maintenance**
+        | ID | Topic | Maintenance Description |
+        |----|-------|-------------------------|
+        |M1| Variable Configuration | Ensure all required variables are properly set before execution |
+        |M2| View Dependency | The view named `[TEST_TARGET]_VIEW` must exist before running this job |
+        |M3| Permissions | Verify that the executing role has CREATE TABLE and INSERT permissions |
+
+        ##### **Improvement opportunities**
+        | ID | Topic | Improvement Description |
+        |----|-------|-------------------------|
+        |I1| Error Handling | Add error handling for cases where the view doesn't exist |
+        |I2| Logging | Implement logging to track execution details and data volumes |
+        |I3| Truncate Option | Add parameter to control whether to truncate and reload vs. append |
+        |I4| Transaction Control | Consider adding transaction control for the append operation |

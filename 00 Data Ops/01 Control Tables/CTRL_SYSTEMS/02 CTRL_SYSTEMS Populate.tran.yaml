@@ -1,0 +1,215 @@
+type: "transformation"
+version: "1.0"
+pipeline:
+  components:
+    CTRL_SYSTEMS:
+      type: "table-output"
+      sources:
+      - "Populate Fixed Flow"
+      parameters:
+        componentName: "CTRL_SYSTEMS"
+        warehouse: "[Environment Default]"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        targetTable: "CTRL_SYSTEMS"
+        fixDataTypeMismatches: "No"
+        columnMapping:
+        - - "SOR_KEY"
+          - "SOR_KEY"
+        - - "SOR_NAME"
+          - "SOR_NAME"
+        - - "CONTEXT"
+          - "CONTEXT"
+        - - "USE_CASE"
+          - "USE_CASE"
+        - - "INTERNAL_EXTERNAL"
+          - "INTERNAL_EXTERNAL"
+        - - "TIER"
+          - "TIER"
+        - - "MARKETS"
+          - "MARKETS"
+        - - "FACT_TYPE"
+          - "FACT_TYPE"
+        - - "DIMENSION_TYPE"
+          - "DIMENSION_TYPE"
+        orderBy:
+        outputMode: "Truncate"
+    Populate Fixed Flow:
+      type: "fixed-flow"
+      parameters:
+        componentName: "Populate Fixed Flow"
+        columns:
+        - - "SOR_KEY"
+          - "VARCHAR"
+          - "10"
+          - ""
+        - - "SOR_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+        - - "CONTEXT"
+          - "VARCHAR"
+          - "1024"
+          - ""
+        - - "USE_CASE"
+          - "VARCHAR"
+          - "1024"
+          - ""
+        - - "INTERNAL_EXTERNAL"
+          - "VARCHAR"
+          - "255"
+          - ""
+        - - "TIER"
+          - "VARCHAR"
+          - "255"
+          - ""
+        - - "MARKETS"
+          - "VARCHAR"
+          - "255"
+          - ""
+        - - "FACT_TYPE"
+          - "VARCHAR"
+          - "255"
+          - ""
+        - - "DIMENSION_TYPE"
+          - "VARCHAR"
+          - "255"
+          - ""
+        values:
+        - - "VIP"
+          - "VIP"
+          - "Distributor data feed, tracks all volume/sales that goes from our distributors\
+            \ to retail outlets."
+          - "Serves as our Source of Truth in regards to depletions (distributor to\
+            \ retail sales) and other distributor data for reporting and analysis."
+          - "External (fed with Internal data)"
+          - "Distributor"
+          - "All"
+          - "Volume, Pricing, Revenue"
+          - "Customer (Retail Account) and Product (Item)"
+        - - "SAP"
+          - "SAP Shipments, Open Orders and Pricing"
+          - "Internal supplier data, houses data on inventory, open orders, and shipments\
+            \ to distributors."
+          - "Serves as our Source of Truth in regards to supplier data (shipments\
+            \ to distributors, orders, inventory) data for reporting and analysis."
+          - "Internal"
+          - "Supplier"
+          - "All"
+          - "Volume, Pricing, Revenue"
+          - "Customer (Distributor) and Product (Item)"
+        - - "GREATVINES"
+          - "GreatVines"
+          - "Internal data source for tracking tactical spend by program (brand-level\
+            \ (sometimes label or SKU-level, sometimes market-level)."
+          - "AMP spend data to monitor and analyze marketing, tactical, and program\
+            \ spending for brands. This dataset provides additional information when\
+            \ considering cost of sales for our products."
+          - "Internal"
+          - "Supplier"
+          - "All"
+          - "Revenue"
+          - "Product (Brand)"
+        - - "PLAN"
+          - "Plan 9L and Points / Net Sales Value (NSV)"
+          - ""
+          - ""
+          - ""
+          - ""
+          - ""
+          - ""
+          - ""
+        - - "NSV"
+          - "Net Sales Value Automation"
+          - "Dataset comprised of projected volume and NSV numbers for the year, created\
+            \ by the commercial finance team for ad-hoc loading."
+          - "To measure current sales performance (month to month, year to date) against\
+            \ planned sales performance."
+          - "Internal"
+          - "Supplier"
+          - "All"
+          - "Volume and Revenue"
+          - "Customer (Market and PremiseType) and Product (SKU)"
+        - - "NABCA"
+          - "NABCA"
+          - "Distributor data feed for control markets (state is distributor). Eventually\
+            \ want to replace VIP Control Market data with data from this source (Monthly\
+            \ account-level data) if possible. Also contains distributor data from\
+            \ competitor brands."
+          - "Serves as Source of Truth for control markets in regards to distributor\
+            \ and retail sales data. Contains competitor data as well which can assist\
+            \ with benchmarking  and competitor analysis."
+          - "External (subset fed with Internal data)"
+          - "Distributor and Retail"
+          - "Control Markets"
+          - "Volume, Pricing, Revenue"
+          - "Customer (Retail Account) and Product (Item)"
+        - - "NIELSEN"
+          - "Nielsen"
+          - "Syndicated data source, provides store-level and market-level sales data\
+            \ by SKU (brand extension + size)"
+          - "Syndicated data that provides sales data for stores and markets as well\
+            \ as competitor data. Used for "
+          - "External"
+          - "Retail"
+          - "All"
+          - "Volume, Pricing, Revenue"
+          - "Customer (Retail Account) and Product (SKU - Brand, Label, Size)"
+        - - "TDLINX"
+          - "TDLinx"
+          - "Account-linking data source, provides the current universe of valid retail\
+            \ outlets as well as a process for linking outlets across different systems\
+            \ with a standard ID (TD Linx Id)."
+          - "Store data that will serve as our Source of Truth of determining all\
+            \ available retail accounts that are licensed to sell liquor. Will be\
+            \ used as out \"store universe\" when calculating market penetration and\
+            \ determining opportunities."
+          - "External"
+          - "Retail"
+          - "All"
+          - "N/A"
+          - "Customer (Retail Account)"
+        - - "SPECTRA"
+          - "Spectra"
+          - "Syndicated data source for demographic demand data (by spirit sub-cat\
+            \ and account)"
+          - "Syndicated data that provides a formulated metric to help determine demand\
+            \ for a given store and product profile. Will be used when analyzing opportunities\
+            \ and potentially for forecasting as well."
+          - "External"
+          - "Retail"
+          - "All"
+          - "Demand"
+          - "Customer (Retail Account) and Product (Brand)"
+        - - "REFERENCE"
+          - "REFERENCE"
+          - ""
+          - "This is a catch all SOR for any data sources that are one-offs or otherwise\
+            \ spreadsheet created for use in Snowflake."
+          - ""
+          - ""
+          - ""
+          - ""
+          - ""
+        - - "NUMERATOR"
+          - "NUMERATOR"
+          - "This is \"ad share\" data."
+          - "Informs the analytics about which ads were run for specific products\
+            \ in a period of time in a specific market"
+          - "External"
+          - "Retailer"
+          - "All"
+          - "Advertising"
+          - "Product (Brand)"
+design:
+  components:
+    CTRL_SYSTEMS:
+      position:
+        x: 560
+        "y": 176
+      tempMetlId: 4492926
+    Populate Fixed Flow:
+      position:
+        x: 389
+        "y": 177
+      tempMetlId: 4492927

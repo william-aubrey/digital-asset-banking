@@ -1,0 +1,96 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Fixed Iterator 0"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    Fixed Iterator 0:
+      type: "fixed-iterator"
+      transitions:
+        success:
+        - "Fixed Iterator 1"
+      iterationTarget: "Create Databases"
+      skipped: false
+      parameters:
+        componentName: "Fixed Iterator 0"
+        concurrency: "Sequential"
+        variablesToIterate:
+        - "jv_database_name"
+        iterationValues:
+        - - "${ev_database}"
+        breakOnFailure: "No"
+    Create Databases:
+      type: "sql-script"
+      skipped: false
+      parameters:
+        componentName: "Create Databases"
+        sqlScript: "CREATE DATABASE IF NOT EXISTS ${jv_database_name};"
+    Fixed Iterator 1:
+      type: "fixed-iterator"
+      iterationTarget: "Grants on Databases"
+      skipped: false
+      parameters:
+        componentName: "Fixed Iterator 1"
+        concurrency: "Sequential"
+        variablesToIterate:
+        - "jv_database_name"
+        iterationValues:
+        - - "${ev_database}"
+        - - "${ev_database}"
+        breakOnFailure: "No"
+    Grants on Databases:
+      type: "sql-script"
+      skipped: false
+      parameters:
+        componentName: "Grants on Databases"
+        sqlScript: |-
+          USE ROLE MATILLION_ROLE;
+          GRANT CREATE SCHEMA ON DATABASE ${jv_database_name} TO ROLE MATILLION_ROLE;
+  variables:
+    jv_database_name:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_schema_name:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+design:
+  components:
+    Start 0:
+      position:
+        x: -30
+        "y": 20
+      tempMetlId: 2480
+    Fixed Iterator 0:
+      position:
+        x: 128
+        "y": 0
+      tempMetlId: 2481
+    Create Databases:
+      position:
+        x: 128
+        "y": 0
+      tempMetlId: 2482
+    Fixed Iterator 1:
+      position:
+        x: 272
+        "y": 0
+      tempMetlId: 2483
+    Grants on Databases:
+      position:
+        x: 272
+        "y": 0
+      tempMetlId: 2484

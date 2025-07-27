@@ -1,0 +1,310 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Create Table for Test Results"
+      parameters:
+        componentName: "Start"
+    Grid Iterator:
+      type: "grid-iterator"
+      iterationTarget: "Automated_tests"
+      parameters:
+        componentName: "Grid Iterator"
+        gridVariable: "Automated_testing"
+        gridIteratorVariableMapping:
+        - - "Test_name"
+          - "TEST_NAME"
+        - - "Target"
+          - "TARGET"
+        - - "Query"
+          - "QUERY"
+        breakOnFailure: "No"
+        concurrency: "Sequential"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Automated_tests:
+      type: "run-transformation"
+      parameters:
+        componentName: "Automated_tests"
+        transformationJob: "00 Data Ops/00 09 Testing/Automated UAT Tests/trans_automated_testing.tran.yaml"
+        setScalarVariables:
+        - - "TEST_NAME"
+          - "${TEST_NAME}"
+        - - "TARGET"
+          - "${TARGET}"
+        - - "QUERY"
+          - "${QUERY}"
+        - - "Automated_testing_table"
+          - "${Automated_testing_table}"
+        setGridVariables:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Remove Grid Placeholders:
+      type: "remove-from-grid"
+      transitions:
+        success:
+        - "Append To Grid"
+      parameters:
+        componentName: "Remove Grid Placeholders"
+        targetGridVariable: "Automated_testing"
+        operation: "In"
+        keyColumns:
+        - "Test_name"
+        - "Target"
+        - "Query"
+        valuesGrid:
+        - - "PLACEHOLDER"
+          - "PLACEHOLDER"
+          - "PLACEHOLDER"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Append To Grid:
+      type: "append-to-grid"
+      transitions:
+        success:
+        - "Grid Iterator"
+      parameters:
+        componentName: "Append To Grid"
+        operation: "Append"
+        targetGridVariable: "Automated_testing"
+        valuesGrid:
+        - - "ORDER_ID_COMPLETNESS"
+          - "ORDERS"
+          - "WITH TEST AS (  SELECT COUNT(\"ORDERID\") AS \"COUNT\" FROM ${DATABASE}.${SOURCE_SCHEMA}.ORDERS\
+            \ WHERE \"ORDERID\" IS NULL  )  SELECT      CASE         WHEN \"COUNT\"\
+            \ = 0 THEN 'PASS'          ELSE 'FAIL'      END AS \"RESULT\" FROM TEST"
+        - - "DETAILS_ID_COMPLETNESS"
+          - "ORDER_DETAILS"
+          - "WITH TEST AS (  SELECT COUNT(\"ORDERID\") AS \"COUNT\" FROM ${DATABASE}.${SOURCE_SCHEMA}.ORDER_DETAILS\
+            \ WHERE \"ORDERID\" IS NULL  )  SELECT      CASE         WHEN \"COUNT\"\
+            \ = 0 THEN 'PASS'          ELSE 'FAIL'      END AS \"RESULT\" FROM TEST"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Create Table for Test Results:
+      type: "create-table-v2"
+      transitions:
+        success:
+        - "Remove Grid Placeholders"
+      parameters:
+        componentName: "Create Table for Test Results"
+        createMethod: "Replace"
+        database: "${ev_database}"
+        schema: "CONTROLS"
+        table: "AUTOMATED_TESTS_RESULTS"
+        snowflakeTableType: "Transient"
+        columns:
+        - - "TARGET"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "TEST_NAME"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "QUERY"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "RESULT"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        defaultDdlCollation:
+        primaryKeys:
+        clusteringKeys:
+        dataRetentionTimeInDays: "1"
+        comment:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    TARGET:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+    QUERY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+    TEST_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+    Automated_testing:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+        columns:
+          Test_name:
+            columnType: "TEXT"
+          Target:
+            columnType: "TEXT"
+          Query:
+            columnType: "TEXT"
+      defaultValue: []
+design:
+  components:
+    Start:
+      position:
+        x: -590
+        "y": 0
+      tempMetlId: 1
+    Grid Iterator:
+      position:
+        x: 90
+        "y": -20
+      tempMetlId: 6
+    Automated_tests:
+      position:
+        x: 90
+        "y": -20
+      tempMetlId: 7
+    Remove Grid Placeholders:
+      position:
+        x: -280
+        "y": 0
+      tempMetlId: 9
+    Append To Grid:
+      position:
+        x: -100
+        "y": 0
+      tempMetlId: 10
+    Create Table for Test Results:
+      position:
+        x: -450
+        "y": 0
+      tempMetlId: 11
+  notes:
+    "1":
+      position:
+        x: -340
+        "y": -170
+      size:
+        height: 108
+        width: 270
+      theme: "yellow"
+      content: |
+        Pipeline Grid Variables Required:
+        **Automated_testing**
+    "2":
+      position:
+        x: -50
+        "y": -170
+      size:
+        height: 108
+        width: 270
+      theme: "yellow"
+      content: "Pipeline Text Variables Required: **QUERY, TARGET, TEST_NAME**"
+    "3":
+      position:
+        x: -630
+        "y": -170
+      size:
+        height: 108
+        width: 270
+      theme: "yellow"
+      content: |-
+        Project Text Variables Required:
+        **DATABASE, SCHEMA, SOURCE_SCHEMA**
+    "4":
+      position:
+        x: -1180
+        "y": -170
+      size:
+        height: 618
+        width: 510
+      theme: "white"
+      content: |-
+        #### Orchestration: Automated UAT Tests
+
+        ##### **Objective**
+
+        This orchestration job runs automated User Acceptance Testing (UAT) tests to validate data quality and integrity across multiple tables.
+
+        - Creates a transient table to store test results
+        - Defines and executes multiple data quality tests through a grid iterator
+        - Validates data completeness and integrity in source tables
+        - Provides standardized PASS/FAIL results for each test
+        - Enables systematic validation of business rules and data quality expectations
+
+        ##### **Logic**
+
+        1. The pipeline starts by creating a transient table called AUTOMATED_TESTS_RESULTS in the CONTROLS schema
+        2. It removes any placeholder entries from the Automated_testing grid variable
+        3. It appends actual test cases to the grid variable, including:
+           - ORDER_ID_COMPLETNESS: Checks for NULL order IDs in the ORDERS table
+           - DETAILS_ID_COMPLETNESS: Checks for NULL order IDs in the ORDER_DETAILS table
+        4. It iterates through each test case in the grid using a Grid Iterator
+        5. For each test case, it runs the transformation job `trans_automated_testing.tran.yaml` which:
+           - Executes the SQL query specified for the test
+           - Adds test metadata (name, target, query)
+           - Appends the results to the AUTOMATED_TESTS_RESULTS table
+        6. The process continues until all tests have been executed
+
+        ##### **Variables usage**
+        |Variable | Purpose |
+        |---------|---------|
+        |TEST_NAME | Name of the test being executed |
+        |TARGET | Target table being tested |
+        |QUERY | SQL query to execute as the test (must return 'PASS' or 'FAIL') |
+        |Automated_testing | Grid variable containing test cases with Test_name, Target, and Query columns |
+        |DATABASE | Database where the source tables are located |
+        |SOURCE_SCHEMA | Schema where the source tables are located |
+        |ev_database | Database where the test results table is created |
+
+        ##### **Maintenance**
+        | ID | Topic | Maintenance Description |
+        |----|-------|-------------------------|
+        |M1| Adding New Tests | Add new test cases by modifying the Append To Grid component with appropriate test name, target, and query |
+        |M2| Test Query Format | Test queries must return 'PASS' or 'FAIL' in the RESULT column |
+        |M3| Table Cleanup | The result table is transient with 1-day retention, but monitor for any issues |
+        |M4| Grid Variable | Ensure the Automated_testing grid variable is properly initialized before execution |
+
+        ##### **Improvement opportunities**
+        | ID | Topic | Improvement Description |
+        |----|-------|-------------------------|
+        |I1| Test Coverage | Expand test coverage to include more tables and data quality checks |
+        |I2| Test Categories | Add support for categorizing tests (e.g., completeness, accuracy, consistency) |
+        |I3| Results Reporting | Implement reporting to summarize test results and trends |
+        |I4| Notifications | Add notification components to alert on test failures |
+        |I5| Historical Results | Store historical test results for trend analysis and reporting |
+        |I6| Test Configuration | Move test definitions to a configuration table for easier maintenance |

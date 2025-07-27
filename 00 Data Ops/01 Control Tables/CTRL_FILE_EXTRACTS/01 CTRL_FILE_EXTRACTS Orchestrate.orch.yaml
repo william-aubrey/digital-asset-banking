@@ -1,0 +1,280 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    CTRL_FILE_EXTRACTS:
+      type: "create-table-v2"
+      transitions:
+        success:
+        - "If 0"
+      skipped: false
+      parameters:
+        componentName: "CTRL_FILE_EXTRACTS"
+        createMethod: "Replace"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        table: "CTRL_FILE_EXTRACTS"
+        snowflakeTableType: "Permanent"
+        columns:
+        - - "SOR_KEY"
+          - "VARCHAR"
+          - "10"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_KEY"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_TITLE"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_DESCRIPTION"
+          - "VARCHAR"
+          - "2048"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_FUNCTION"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_PREFIX"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_SUFFIX"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_EXTENSION"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "IS_ZIP"
+          - "VARCHAR"
+          - "8"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FREQUENCY"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_NAME_FORMAT"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FOLDER_PATH"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "S3_BUCKET"
+          - "VARCHAR"
+          - "1024"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "SF_SOURCE_TABLE_NAME"
+          - "VARCHAR"
+          - "512"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "IS_ACTIVE"
+          - "BOOLEAN"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "EXTRA_CLEAN"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "HISTORY_TYPE"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "HISTORY_DATE_FIELD"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "COMMENT"
+          - "VARCHAR"
+          - "4096"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        defaultDdlCollation: ""
+        primaryKeys:
+        - "SOR_KEY"
+        clusteringKeys:
+        dataRetentionTimeInDays: ""
+        comment: "Control Table for the SOR File Extracts"
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "CTRL_FILE_EXTRACTS"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    Full Refresh:
+      type: "run-transformation"
+      skipped: true
+      parameters:
+        componentName: "Full Refresh"
+        transformationJob: "00 Data Ops/01 Control Tables/CTRL_FILE_EXTRACTS/02 CTRL_FILE_EXTRACTS\
+          \ Populate (full refresh).tran.yaml"
+        setScalarVariables:
+        setGridVariables:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Incremental Refresh:
+      type: "run-transformation"
+      skipped: true
+      parameters:
+        componentName: "Incremental Refresh"
+        transformationJob: "00 Data Ops/01 Control Tables/CTRL_FILE_EXTRACTS/03 CTRL_FILE_EXTRACTS\
+          \ Populate (incremental update).tran.yaml"
+        setScalarVariables:
+        setGridVariables:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    If 0:
+      type: "if"
+      transitions:
+        "true":
+        - "Full Refresh"
+        "false":
+        - "Incremental Refresh"
+      skipped: false
+      parameters:
+        componentName: "If 0"
+        mode: "Simple"
+        condition:
+        - - "jv_full_refresh"
+          - "Is"
+          - "Equal to"
+          - "TRUE"
+        combineConditions: "And"
+design:
+  components:
+    CTRL_FILE_EXTRACTS:
+      position:
+        x: 50
+        "y": 110
+      tempMetlId: 3112304
+    Start 0:
+      position:
+        x: -100
+        "y": 110
+      tempMetlId: 3112306
+    Full Refresh:
+      position:
+        x: 380
+        "y": 30
+      tempMetlId: 3112307
+    Incremental Refresh:
+      position:
+        x: 380
+        "y": 210
+      tempMetlId: 3112308
+    If 0:
+      position:
+        x: 200
+        "y": 110
+      tempMetlId: 3112309

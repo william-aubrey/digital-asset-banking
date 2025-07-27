@@ -1,0 +1,263 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Create Table"
+      parameters:
+        componentName: "Start"
+    Run trans_process_tests:
+      type: "run-transformation"
+      transitions:
+        success:
+        - "Query Result To Scalar"
+      parameters:
+        componentName: "Run trans_process_tests"
+        transformationJob: "00 Data Ops/09 Testing/Automated Process Tests/trans_process_tests.tran.yaml"
+        setScalarVariables:
+        - - "TEST_NAME"
+          - "${TEST_NAME}"
+        - - "TEST_QUERY"
+          - "${TEST_QUERY}"
+        setGridVariables:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+        - - "TEST_RESULT"
+          - "${sysvar.thisComponent.TEST_RESULT}"
+    Create Table:
+      type: "create-table-v2"
+      transitions:
+        success:
+        - "Run trans_process_tests"
+      parameters:
+        componentName: "Create Table"
+        createMethod: "Replace"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        table: "CTRL_TEST_PROCESS_CONTROL"
+        snowflakeTableType: "Transient"
+        columns:
+        - - "TEST_NAME"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "TEST_RESULT"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        defaultDdlCollation:
+        primaryKeys:
+        clusteringKeys:
+        dataRetentionTimeInDays: "1"
+        comment:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Query Result To Scalar:
+      type: "query-to-scalar"
+      transitions:
+        success:
+        - "If"
+      parameters:
+        componentName: "Query Result To Scalar"
+        mode: "Basic"
+        scalarVariableMapping:
+        - - "TEST_RESULT"
+          - "RESULT"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        table: "CTRL_TEST_PROCESS_CONTROL"
+        tableColumns:
+        - "TEST_NAME"
+        - "RESULT"
+        orderBy:
+        sort: "Ascending"
+        limit: "1"
+        filterConditions:
+        combineCondition: "And"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    If:
+      type: "if"
+      transitions:
+        "true":
+        - "End Success"
+        "false":
+        - "End Failure"
+      parameters:
+        componentName: "If"
+        mode: "Simple"
+        condition:
+        - - "TEST_RESULT"
+          - "Is"
+          - "Equal to"
+          - "PASS"
+        combineConditions: "And"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    End Failure:
+      type: "end-failure"
+      parameters:
+        componentName: "End Failure"
+      postProcessing:
+        updateOutputMessage: "FAILED TEST: ${TEST_NAME}"
+        updateScalarVariables:
+    End Success:
+      type: "end-success"
+      parameters:
+        componentName: "End Success"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    TEST_RESULT:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    TEST_TARGET:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+    TEST_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+    TEST_QUERY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "SELECT 'PASS'"
+design:
+  components:
+    Start:
+      position:
+        x: -460
+        "y": -10
+      tempMetlId: 1
+    Run trans_process_tests:
+      position:
+        x: -160
+        "y": -10
+      tempMetlId: 2
+    Create Table:
+      position:
+        x: -310
+        "y": -10
+      tempMetlId: 3
+    Query Result To Scalar:
+      position:
+        x: 0
+        "y": -10
+      tempMetlId: 4
+    If:
+      position:
+        x: 160
+        "y": -10
+      tempMetlId: 5
+    End Failure:
+      position:
+        x: 330
+        "y": 100
+      tempMetlId: 7
+    End Success:
+      position:
+        x: 330
+        "y": -10
+      tempMetlId: 12
+  notes:
+    "1":
+      position:
+        x: -480
+        "y": -110
+      size:
+        height: 58
+        width: 860
+      theme: "light-green"
+      content: "##### Run each test query and retrieve if it was successful or failed"
+    "2":
+      position:
+        x: -1020
+        "y": -110
+      size:
+        height: 578
+        width: 500
+      theme: "white"
+      content: |-
+        #### Orchestration: Process Tests
+
+        ##### **Objective**
+
+        This orchestration job runs automated process tests and evaluates their results, providing a framework for validating data processes.
+
+        - Creates a transient table to store test results
+        - Executes test queries through a transformation job
+        - Evaluates test results (PASS/FAIL)
+        - Provides different outcomes based on test results
+        - Enables automated validation of data processes
+
+        ##### **Logic**
+
+        1. The pipeline starts by creating a transient table called LAST_PROCESS_TEST_RESULT
+        2. It runs the transformation job `trans_process_tests.tran.yaml` which:
+           - Executes the SQL query specified in the TEST_QUERY variable
+           - Adds the test name to the result
+           - Outputs the results to the LAST_PROCESS_TEST_RESULT **(Note: 2025-07-08 William changed this name to **CTRL_TEST_PROCESS_CONTROL** from LAST_PROCESS_TEST_RESULT) table**
+        3. The orchestration job retrieves the test result from the table
+        4. It evaluates if the result equals "PASS"
+        5. If the test passed, the job ends with success
+        6. If the test failed, the job ends with failure and outputs a failure message
+
+        ##### **Variables usage**
+        |Variable | Purpose |
+        |---------|---------|
+        |TEST_NAME | Name of the test being executed |
+        |TEST_QUERY | SQL query to execute as the test (must return 'PASS' for success) |
+        |TEST_RESULT | Stores the result of the test execution |
+        |TEST_TARGET | Placeholder variable (not directly used in this pipeline) |
+        |DATABASE | Database where the test result table is created |
+        |SCHEMA | Schema where the test result table is created |
+
+        ##### **Maintenance**
+        | ID | Topic | Maintenance Description |
+        |----|-------|-------------------------|
+        |M1| Variable Configuration | Ensure TEST_NAME and TEST_QUERY are properly set before execution |
+        |M2| Test Query Format | Test queries must return 'PASS' in the result column for successful tests |
+        |M3| Table Cleanup | The result table is transient with 1-day retention, but monitor for any issues |
+        |M4| Transformation Job | Ensure the referenced transformation job exists and is properly configured |
+
+        ##### **Improvement opportunities**
+        | ID | Topic | Improvement Description |
+        |----|-------|-------------------------|
+        |I1| Multiple Tests | Enhance to run multiple tests in sequence with aggregated results |
+        |I2| Detailed Logging | Implement more comprehensive logging of test execution details |
+        |I3| Historical Results | Store historical test results for trend analysis and reporting |
+        |I4| Notifications | Add notification components to alert on test failures |
+        |I5| Parameterization | Improve parameterization to make tests more reusable and configurable |
+        |I6| Test Categories | Add support for categorizing tests and reporting by category |

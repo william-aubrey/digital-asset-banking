@@ -1,0 +1,297 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "CTRL_TEST_DQ_TESTS"
+        - "CTRL_TEST_DQ_RESULTS"
+      parameters:
+        componentName: "Start"
+    CTRL_TEST_DQ_TESTS:
+      type: "create-table-v2"
+      transitions:
+        success:
+        - "Run 02 Populate Data Quality Test Table"
+      parameters:
+        componentName: "CTRL_TEST_DQ_TESTS"
+        createMethod: "Replace"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        table: "CTRL_TEST_DQ_TESTS"
+        snowflakeTableType: "Permanent"
+        columns:
+        - - "SOR_KEY"
+          - "VARCHAR"
+          - "32"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "System of Record Unique Identifier"
+          - ""
+        - - "FILE_KEY"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "File Extract Unique Identifier"
+          - ""
+        - - "PROCESS_STEP"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "3 valid values: STAGE, LAND or CLEAN"
+          - ""
+        - - "SCHEMA_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Schema Name to find Table"
+          - ""
+        - - "TABLE_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Corresponding Table Name"
+          - ""
+        - - "TEST_INDEX"
+          - "NUMBER"
+          - "4"
+          - "0"
+          - ""
+          - "No"
+          - "No"
+          - "Index for number of test for this specific table in this schema"
+          - ""
+        - - "TEST_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Brief name for the test"
+          - ""
+        - - "TEST_DESCRIPTION"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Describe the test"
+          - ""
+        - - "TEST_CATEGORY"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Test adheres to one of the 6 dimensions of data quality: completeness,\
+            \ uniqueness, timeliness, validity accuracy or consistency."
+          - ""
+        - - "TEST_SQL_QUERY"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Holds the SQL statement for the test (up to 16MB)"
+          - ""
+        - - "RESULT_TYPE"
+          - "VARCHAR"
+          - "50"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Defines how to interpret the expected result: 'EXACT_SCALAR', 'GREATER_THAN',\
+            \ 'LESS_THAN', 'BOOLEAN_TRUE', 'BOOLEAN_FALSE'"
+          - ""
+        - - "RESULT_VALUE_EXPECTED"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Stores the expected scalar value (can be INT, DECIMAL, BOOLEAN, VARCHAR\
+            \ to match expected_result_type)"
+          - ""
+        - - "ACTIVE_FLAG"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Is this an active test?"
+          - ""
+        defaultDdlCollation:
+        primaryKeys:
+        clusteringKeys:
+        dataRetentionTimeInDays:
+        comment: "This is a repository of data quality tests executed against specific\
+          \ SOR Tables."
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    CTRL_TEST_DQ_RESULTS:
+      type: "create-table-v2"
+      parameters:
+        componentName: "CTRL_TEST_DQ_RESULTS"
+        createMethod: "Replace"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        table: "CTRL_TEST_DQ_RESULTS"
+        snowflakeTableType: "Permanent"
+        columns:
+        - - "SOR_KEY"
+          - "VARCHAR"
+          - "32"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "System of Record Unique Identifier"
+          - ""
+        - - "FILE_KEY"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "File Extract Unique Identifier"
+          - ""
+        - - "PROCESS_STEP"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_DATE"
+          - "DATE"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "SCHEMA_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Schema Name to find Table"
+          - ""
+        - - "TABLE_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Corresponding Table Name"
+          - ""
+        - - "TEST_INDEX"
+          - "NUMBER"
+          - "4"
+          - "0"
+          - ""
+          - "No"
+          - "No"
+          - "Index for number of test for this specific table in this schema"
+          - ""
+        - - "RESULT_VALUE_ACTUAL"
+          - "VARCHAR"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Stores the actual scalar result from the executed SQL (populated after\
+            \ test run)"
+          - ""
+        - - "TEST_STATUS"
+          - "VARCHAR"
+          - "50"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "'PASS', 'FAIL', 'ERROR' (Populated after test run)"
+          - ""
+        - - "TEST_TIMESTAMP"
+          - "TIMESTAMP"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - "Did the test fail to run? What was the error?"
+          - ""
+        defaultDdlCollation:
+        primaryKeys:
+        clusteringKeys:
+        dataRetentionTimeInDays:
+        comment: "This is a repository of data quality tests executed against specific\
+          \ SOR Tables."
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+    Run 02 Populate Data Quality Test Table:
+      type: "run-transformation"
+      parameters:
+        componentName: "Run 02 Populate Data Quality Test Table"
+        transformationJob: "00 Data Ops/01 Control Tables/CTRL_TEST_DQ/02 Populate\
+          \ Data Quality Test Table.tran.yaml"
+        setScalarVariables:
+        setGridVariables:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+design:
+  components:
+    Start:
+      position:
+        x: 0
+        "y": -10
+      tempMetlId: 1
+    CTRL_TEST_DQ_TESTS:
+      position:
+        x: 200
+        "y": -70
+      tempMetlId: 2
+    CTRL_TEST_DQ_RESULTS:
+      position:
+        x: 200
+        "y": 80
+      tempMetlId: 4
+    Run 02 Populate Data Quality Test Table:
+      position:
+        x: 420
+        "y": -70
+      tempMetlId: 5

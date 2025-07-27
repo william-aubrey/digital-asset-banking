@@ -1,0 +1,139 @@
+type: "transformation"
+version: "1.0"
+pipeline:
+  components:
+    SQL:
+      type: "sql"
+      parameters:
+        componentName: "SQL"
+        query: "${TEST_QUERY} AS \"RESULT\""
+    Calculator:
+      type: "calculator"
+      sources:
+      - "SQL"
+      parameters:
+        componentName: "Calculator"
+        includeInputColumns: "Yes"
+        calculations:
+        - - "$$${TEST_NAME}$$"
+          - "TEST_NAME"
+    LAST_PROCESS_TEST_RESULT:
+      type: "table-output"
+      sources:
+      - "Calculator"
+      parameters:
+        componentName: "LAST_PROCESS_TEST_RESULT"
+        warehouse: "[Environment Default]"
+        database: "${DATABASE}"
+        schema: "${SCHEMA}"
+        targetTable: "LAST_PROCESS_TEST_RESULT"
+        fixDataTypeMismatches: "No"
+        columnMapping:
+        - - "TEST_NAME"
+          - "TEST_NAME"
+        - - "RESULT"
+          - "RESULT"
+        orderBy:
+        outputMode: "Append"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    TEST_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+    TEST_QUERY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "SELECT 1"
+design:
+  components:
+    SQL:
+      position:
+        x: 340
+        "y": 60
+      tempMetlId: 1
+    Calculator:
+      position:
+        x: 480
+        "y": 60
+      tempMetlId: 3
+    LAST_PROCESS_TEST_RESULT:
+      position:
+        x: 640
+        "y": 60
+      tempMetlId: 4
+  notes:
+    "1":
+      position:
+        x: 300
+        "y": -40
+      size:
+        height: 68
+        width: 440
+      theme: "light-green"
+      content: "##### Run a query and add it to a table for checking"
+    "2":
+      position:
+        x: -260
+        "y": -30
+      size:
+        height: 658
+        width: 530
+      theme: "white"
+      content: |-
+        #### Transformation: Process Tests
+
+        ##### **Objective**
+
+        This transformation job executes test queries and stores their results as part of an automated testing framework.
+
+        - Executes SQL test queries dynamically provided as variables
+        - Associates test names with results
+        - Appends results to a table for evaluation by the orchestration job
+        - Serves as the execution engine for the automated testing framework
+
+        ##### **Logic**
+
+        1. The pipeline starts with a SQL component that executes the query provided in the TEST_QUERY variable
+           - The query result is aliased as "RESULT"
+           - The query should return 'PASS' for successful tests
+        2. A Calculator component adds the test name as a new column
+           - Preserves the original RESULT column
+           - Adds TEST_NAME column with the value from the variable
+        3. The results are appended to the LAST_PROCESS_TEST_RESULT table
+           - The table contains TEST_NAME and RESULT columns
+           - Results are appended to allow for multiple test executions
+
+        ##### **Variables usage**
+        |Variable | Purpose |
+        |---------|---------|
+        |TEST_NAME | Name of the test being executed (passed from orchestration job) |
+        |TEST_QUERY | SQL query to execute as the test (passed from orchestration job) |
+        |DATABASE | Database where the test result table is located |
+        |SCHEMA | Schema where the test result table is located |
+
+        ##### **Maintenance**
+        | ID | Topic | Maintenance Description |
+        |----|-------|-------------------------|
+        |M1| Test Query Format | Ensure test queries return a single row with a value that can be evaluated as PASS/FAIL |
+        |M2| Variable Dependencies | This job depends on variables being set by the calling orchestration job |
+        |M3| Table Structure | The job expects the LAST_PROCESS_TEST_RESULT table to exist with the correct structure |
+        |M4| Query Performance | Monitor performance of test queries, especially for complex validation tests |
+
+        ##### **Improvement opportunities**
+        | ID | Topic | Improvement Description |
+        |----|-------|-------------------------|
+        |I1| Query Validation | Add validation to ensure the test query has the correct format |
+        |I2| Error Handling | Implement error handling for invalid or failing queries |
+        |I3| Multiple Tests | Enhance to support executing multiple test queries in a single run |
+        |I4| Metadata | Add execution timestamp and additional metadata to the results |
+        |I5| Result Details | Store more detailed information about test failures beyond pass/fail |
+        |I6| Performance Metrics | Add execution time and resource usage metrics for each test |

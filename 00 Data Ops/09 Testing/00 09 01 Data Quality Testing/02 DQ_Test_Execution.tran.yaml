@@ -1,0 +1,282 @@
+type: "transformation"
+version: "1.0"
+pipeline:
+  components:
+    Execute Test SQL:
+      type: "sql"
+      parameters:
+        componentName: "Execute Test SQL"
+        query: "SELECT (${jv_TEST_SQL_QUERY}) as \"RESULT_VALUE_ACTUAL\""
+    Create Results Table Fields:
+      type: "calculator"
+      sources:
+      - "Execute Test SQL"
+      parameters:
+        componentName: "Create Results Table Fields"
+        includeInputColumns: "Yes"
+        calculations:
+        - - "CASE \n  WHEN '${jv_RESULT_TYPE}' = 'EXACT_SCALAR'\n  THEN IFF(\"RESULT_VALUE_ACTUAL\"\
+            \ = '${jv_RESULT_VALUE_EXPECTED}', 'PASS', 'FAIL')\n  ELSE 'UNKNOWN'\n\
+            END\n"
+          - "TEST_STATUS"
+        - - |
+            '${jv_SOR_KEY}'
+          - "SOR_KEY"
+        - - |
+            '${jv_FILE_KEY}'
+          - "FILE_KEY"
+        - - |
+            '${jv_SCHEMA_NAME}'
+          - "SCHEMA_NAME"
+        - - |
+            '${jv_TABLE_NAME}'
+          - "TABLE_NAME"
+        - - |
+            ${jv_TEST_INDEX}
+          - "TEST_INDEX"
+        - - |
+            "RESULT_VALUE_ACTUAL"
+          - "RESULT_VALUE_ACTUAL"
+        - - |
+            '${jv_FILE_DATE}'
+          - "FILE_DATE"
+        - - "CURRENT_TIMESTAMP()"
+          - "TEST_TIMESTAMP"
+        - - "'${jv_PROCESS_STEP}'"
+          - "PROCESS_STEP"
+    CTRL_TEST_DQ_RESULTS:
+      type: "table-output"
+      sources:
+      - "Create Results Table Fields"
+      parameters:
+        componentName: "CTRL_TEST_DQ_RESULTS"
+        warehouse: "[Environment Default]"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        targetTable: "CTRL_TEST_DQ_RESULTS"
+        fixDataTypeMismatches: "No"
+        columnMapping:
+        - - "TEST_STATUS"
+          - "TEST_STATUS"
+        - - "SOR_KEY"
+          - "SOR_KEY"
+        - - "FILE_KEY"
+          - "FILE_KEY"
+        - - "FILE_DATE"
+          - "FILE_DATE"
+        - - "SCHEMA_NAME"
+          - "SCHEMA_NAME"
+        - - "TABLE_NAME"
+          - "TABLE_NAME"
+        - - "TEST_INDEX"
+          - "TEST_INDEX"
+        - - "RESULT_VALUE_ACTUAL"
+          - "RESULT_VALUE_ACTUAL"
+        - - "TEST_TIMESTAMP"
+          - "TEST_TIMESTAMP"
+        orderBy:
+        outputMode: "Append"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    jv_TEST_SQL_QUERY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Select current_date()"
+    jv_SOR_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "SYNTHETIC"
+    jv_TEST_INDEX:
+      metadata:
+        type: "NUMBER"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "1"
+    jv_FILE_DATE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "2025-07-11"
+    jv_SCHEMA_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "CONTROLS"
+    jv_PROCESS_STEP:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Value for Validation Only"
+    jv_TABLE_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "TEMP_TEST_PRODUCT_DATA"
+    jv_TEST_DESCRIPTION:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Check for NULLs"
+    jv_RESULT_TYPE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "EXACT_SCALAR"
+    jv_RESULT_VALUE_EXPECTED:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "0"
+    jv_TEST_CATEGORY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Completeness"
+    jv_FILE_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Product_Data.csv"
+    jv_TEST_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+      defaultValue: "Live Free or Die!"
+design:
+  components:
+    Execute Test SQL:
+      position:
+        x: 670
+        "y": 100
+      tempMetlId: 1
+    Create Results Table Fields:
+      position:
+        x: 840
+        "y": 100
+      tempMetlId: 2
+    CTRL_TEST_DQ_RESULTS:
+      position:
+        x: 1000
+        "y": 100
+      tempMetlId: 3
+  notes:
+    "1":
+      position:
+        x: -330
+        "y": -70
+      size:
+        height: 588
+        width: 690
+      theme: "yellow"
+      content: |-
+        #### 02 DQ_Test_Execution
+
+        ##### **Objective**
+
+        This transformation pipeline executes a single data quality test and records the result.
+
+        - Executes a parameterized SQL query to perform a data quality test
+        - Evaluates test results by comparing actual values with expected values
+        - Determines test status (PASS/FAIL)
+        - Records test results and metadata in a control table
+
+        ##### **Logic**
+
+        1. **Test Execution**: The pipeline executes the SQL query provided in the jv_TEST_SQL_QUERY variable using the SQL component
+        2. **Result Evaluation**: The Calculator component compares the actual result with the expected result:
+           - For EXACT_SCALAR tests: Performs exact string comparison between actual and expected values
+           - Sets test status to PASS if values match, FAIL if they don't, or UNKNOWN for unsupported result types
+        3. **Result Recording**: The pipeline writes the test result and associated metadata to the CTRL_TEST_DQ_RESULTS table, including:
+           - Test identification (SOR_KEY, FILE_KEY, SCHEMA_NAME, TABLE_NAME, TEST_INDEX)
+           - Test result (RESULT_VALUE_ACTUAL, TEST_STATUS)
+           - Execution metadata (FILE_DATE, TEST_TIMESTAMP, PROCESS_STEP)
+
+        ##### **Variables usage**
+        |Variable | Purpose |
+        |---------|---------|
+        |jv_TEST_SQL_QUERY | SQL query that performs the data quality test |
+        |jv_RESULT_TYPE | Type of result comparison (currently supports EXACT_SCALAR) |
+        |jv_RESULT_VALUE_EXPECTED | Expected value from the test query |
+        |jv_SOR_KEY | Source system identifier |
+        |jv_FILE_KEY | File or data source identifier |
+        |jv_SCHEMA_NAME | Schema containing the table being tested |
+        |jv_TABLE_NAME | Table being tested |
+        |jv_TEST_INDEX | Unique identifier for the test |
+        |jv_TEST_NAME | Descriptive name of the test |
+        |jv_TEST_DESCRIPTION | Detailed description of what the test checks |
+        |jv_TEST_CATEGORY | Data quality dimension (e.g., Completeness, Uniqueness) |
+        |jv_FILE_DATE | Date associated with the file being tested |
+        |jv_PROCESS_STEP | Processing stage (LAND, CLEAN) being tested |
+
+        ##### **Maintenance**
+        | ID | Topic | Maintenance Description |
+        |----|-------|-------------------------|
+        |M1| Result Type Support | Currently only supports EXACT_SCALAR comparison; code must be updated if new comparison types are added |
+        |M2| Error Handling | Consider adding error handling for SQL execution failures |
+        |M3| Variable Management | Ensure all required variables are passed from the parent orchestration job |
+        |M4| Output Table Structure | Ensure the CTRL_TEST_DQ_RESULTS table structure remains compatible with the job output |
+        |M5| SQL Injection Prevention | Review the SQL execution component to ensure it properly handles special characters in the test SQL |
+
+        ##### **Improvement opportunities**
+        | ID | Topic | Improvement Description |
+        |----|-------|-------------------------|
+        |I1| Additional Result Types | Extend the framework to support more comparison types (e.g., RANGE, PATTERN_MATCH, THRESHOLD) |
+        |I2| Enhanced Metadata | Add additional metadata fields like execution duration and error details |
+        |I3| Dynamic SQL Validation | Add validation for the SQL query before execution |
+        |I4| Test Result Details | Store more detailed information about test failures (e.g., expected vs. actual difference) |
+        |I5| Performance Metrics | Add tracking of query execution time to identify slow-running tests |
+        |I6| Parameterized Thresholds | Support percentage-based thresholds for tests that don't require exact matches |
+        |I7| Error Recovery | Implement retry logic for transient database errors |
+    "2":
+      position:
+        x: 410
+        "y": 240
+      size:
+        height: 388
+        width: 710
+      theme: "red"
+      content: "# SQL Syntax Error Fix\n\n## The Problem\n\nThe error occurs because\
+        \ the SQL component is trying to execute:\n\nSELECT (${jv_TEST_SQL_QUERY})\
+        \ as \"RESULT_VALUE_ACTUAL\"\n\nThis syntax treats the entire SQL query as\
+        \ a scalar expression, which fails when the query contains SELECT statements\
+        \ or other complex SQL.\n\n## The Solution\n\nModify the SQL queries stored\
+        \ in your control table (CTRL_TEST_DQ_TESTS) to ensure they always return\
+        \ a single column explicitly named \"RESULT_VALUE_ACTUAL\". \n\nInstead of\
+        \ having the transformation pipeline wrap your test queries in another SELECT\
+        \ statement, modify each test query in the control table to follow this pattern:\n\
+        \nSELECT your_test_expression AS \"RESULT_VALUE_ACTUAL\"\n\nFor example, if\
+        \ your original test query was:\n\nSELECT COUNT(*) FROM my_table WHERE column\
+        \ IS NULL\n\nChange it to:\n\nSELECT COUNT(*) AS \"RESULT_VALUE_ACTUAL\" FROM\
+        \ my_table WHERE column IS NULL\n\nThen update the Execute Test SQL component\
+        \ to simply execute:\n\n${jv_TEST_SQL_QUERY}\n\nThis approach:\n1. Ensures\
+        \ the column is always named correctly\n2. Avoids the syntax error from nested\
+        \ SELECT statements\n3. Maintains compatibility with the rest of your pipeline"
