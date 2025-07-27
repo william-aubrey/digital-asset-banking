@@ -1,0 +1,259 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "CTRL_TABLE_SCHEMAS"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    If 0:
+      type: "if"
+      transitions:
+        "false":
+        - "Populate Table"
+      skipped: false
+      parameters:
+        componentName: "If 0"
+        mode: "Simple"
+        condition:
+        - - "jv_full_refresh"
+          - "Is"
+          - "Equal to"
+          - "TRUE"
+        combineConditions: "And"
+    Populate Table:
+      type: "run-transformation"
+      skipped: false
+      parameters:
+        componentName: "Populate Table"
+        transformationJob: "00 Data Ops/01 Control Tables/CTRL_TABLE_SCHEMAS/02 CTRL_TABLE_SCHEMAS\
+          \ Populate (incremental update).tran.yaml"
+        setScalarVariables:
+        setGridVariables:
+    CTRL_TABLE_SCHEMAS:
+      type: "create-table-v2"
+      transitions:
+        success:
+        - "If 0"
+      skipped: false
+      parameters:
+        componentName: "CTRL_TABLE_SCHEMAS"
+        createMethod: "Replace"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        table: "CTRL_TABLE_SCHEMAS"
+        snowflakeTableType: "Permanent"
+        columns:
+        - - "SOR_KEY"
+          - "VARCHAR"
+          - "32"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FILE_KEY"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "PROCESSING_SEQUENCE"
+          - "NUMBER"
+          - "3"
+          - "0"
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "DATABASE_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "SCHEMA_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "TABLE_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "ORDINAL_POSITION"
+          - "NUMBER"
+          - "3"
+          - "0"
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FIELD_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "DATA_TYPE"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "SIZE"
+          - "NUMBER"
+          - "3"
+          - "0"
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "PRECISION"
+          - "NUMBER"
+          - "3"
+          - "0"
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "DEFAULT_VALUE"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "NOT_NULL"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "IS_UNIQUE"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "COMMENT"
+          - "VARCHAR"
+          - "1024"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "PRIMARY_KEY"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FOREIGN_KEY"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "SCD_COMPARE_FLAG"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        defaultDdlCollation: ""
+        primaryKeys:
+        clusteringKeys:
+        dataRetentionTimeInDays: ""
+        comment: ""
+  variables:
+    jv_full_refresh:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "FALSE"
+design:
+  components:
+    Start 0:
+      position:
+        x: -40
+        "y": 0
+      tempMetlId: 2517
+    If 0:
+      position:
+        x: 320
+        "y": 0
+      tempMetlId: 2519
+    Populate Table:
+      position:
+        x: 540
+        "y": 0
+      tempMetlId: 2520
+    CTRL_TABLE_SCHEMAS:
+      position:
+        x: 140
+        "y": 0
+      tempMetlId: 2521
+  notes:
+    "2516":
+      position:
+        x: -436
+        "y": -52
+      size:
+        height: 176
+        width: 336
+      theme: "green"
+      content: |-
+        **INSTRUCTIONS**
+        1. Set the value of jv_full_refresh to TRUE or FALSE

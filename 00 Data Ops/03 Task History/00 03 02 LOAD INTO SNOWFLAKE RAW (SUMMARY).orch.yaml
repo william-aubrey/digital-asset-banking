@@ -1,0 +1,231 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start LOAD INTO SNOWFLAKE RAW:
+      type: "start"
+      transitions:
+        unconditional:
+        - "PRINT PREVIOUS JOB VARIABLES"
+      skipped: false
+      parameters:
+        componentName: "Start LOAD INTO SNOWFLAKE RAW"
+    API CALL:
+      type: "unknown-orchestration"
+      skipped: false
+      parameters:
+        "1": "API CALL"
+        "2": "Basic"
+        "6": "Date_Range"
+        "7":
+        - "id"
+        - "type"
+        - "groupName"
+        - "projectName"
+        - "versionID"
+        - "versionName"
+        - "environmentName"
+        - "jobName"
+        - "state"
+        - "enqueuedTime"
+        - "startTime"
+        - "endTime"
+        - "message"
+        - "completeTime"
+        - "customerID"
+        - "environmentID"
+        - "hasHistoricJobs"
+        - "jobID"
+        - "originatorID"
+        - "projectID"
+        - "rowCount"
+        - "tracksCompleteTime"
+        "8":
+          "1":
+          - - "type"
+            - "Is"
+            - "Equal to"
+            - "SCHEDULE_ORCHESTRATION"
+        "9": "Or"
+        "10": "SELECT ..."
+        "11": "100"
+        "12":
+          "1":
+          - - "Other"
+            - "StartDate=${jv_START_DATE}; EndDate=${jv_END_DATE}"
+        "13": "${ev_database}"
+        "14": "CONTROLS"
+        "15": "MATILLION_TASK_HISTORY_RAW"
+        "16": "[Environment Default]"
+        "17": "proximo-analytics-dev"
+        "18":
+        "20": ""
+        "100": "Matillion API Test"
+        "499": "User/Password"
+        "500": "ec2-user"
+        "501": ""
+        "502": ""
+        "503": ""
+        "504": ""
+        "505": ""
+        "506": "Request Header"
+        "1001":
+        "1013": "Off"
+        "1014": "3"
+        "1992": "[Environment Default]"
+        "1993": "False"
+        "1994": ""
+        "1995": "[Environment Default]"
+        "1996": "[Environment Default]"
+        "1997": ""
+        "1998": "[Environment Default]"
+        "1999": "[Environment Default]"
+        "2000": "Standard"
+        "40000": "None"
+        "40001": ""
+        "40501":
+        "40502":
+        - "On"
+        - "On"
+        - "On"
+        - ""
+        - "On"
+        - "Gzip"
+        "63319": "Credentials"
+        "63320": ""
+        "63321": ""
+        "63322": ""
+        "84533": ""
+        "88340":
+        "88341": "Existing Amazon S3 Location"
+        "88342": "Credentials"
+        "88343": ""
+        "88344": "False"
+        "88345": "[Custom]"
+        "98776": ""
+    PRINT PREVIOUS JOB VARIABLES:
+      type: "python-script"
+      transitions:
+        success:
+        - "DEFINE DATE VARIABLES"
+      skipped: false
+      parameters:
+        componentName: "PRINT PREVIOUS JOB VARIABLES"
+        script: "print('jv_DIFF_NUMBER -', jv_DIFF_NUMBER)\nprint('jv_START_DATE -',\t\
+          jv_START_DATE)\nprint('jv_END_DATE -',\t\tjv_END_DATE\t)\nprint('jv_MAX_VALUE\
+          \ -',\t\tjv_MAX_VALUE)\t\n"
+        interpreter: "Python 3"
+        timeout: "360"
+    DEFINE DATE VARIABLES:
+      type: "query-to-scalar"
+      transitions:
+        success:
+        - "PRINT DATE VARIABLES"
+      skipped: false
+      parameters:
+        componentName: "DEFINE DATE VARIABLES"
+        mode: "Advanced"
+        query: "SELECT \nto_varchar(dateadd(day,'${jv_DIFF_NUMBER}','${jv_START_DATE}'),'YYYY-MM-DD')\
+          \ as END_DATE\n"
+        scalarVariableMapping:
+        - - "jv_END_DATE"
+          - "END_DATE"
+    PRINT DATE VARIABLES:
+      type: "python-script"
+      transitions:
+        success:
+        - "RETRY IF FAIL"
+      skipped: false
+      parameters:
+        componentName: "PRINT DATE VARIABLES"
+        script: "print('jv_DIFF_NUMBER -', jv_DIFF_NUMBER)\nprint('jv_START_DATE -',\t\
+          jv_START_DATE)\nprint('jv_END_DATE -',\t\tjv_END_DATE\t)\nprint('jv_MAX_VALUE\
+          \ -',\t\tjv_MAX_VALUE)\t\n"
+        interpreter: "Python 3"
+        timeout: "360"
+    TASK_HISTORY_CLEAN:
+      type: "run-transformation"
+      skipped: false
+      parameters:
+        componentName: "TASK_HISTORY_CLEAN"
+        transformationJob: "00 00 Admin/00 03 Task History/00 03 03 MATILLION_TASK_HISTORY_CLEAN\
+          \ (SUMMARY)"
+        setScalarVariables:
+        setGridVariables:
+    RETRY IF FAIL:
+      type: "retry"
+      transitions:
+        success:
+        - "TASK_HISTORY_CLEAN"
+      iterationTarget: "API CALL"
+      skipped: false
+      parameters:
+        componentName: "RETRY IF FAIL"
+        numberOfRetries: "1"
+        retryDelay: "Retry immediately"
+  variables:
+    jv_END_DATE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_MAX_VALUE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_START_DATE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_DIFF_NUMBER:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+design:
+  components:
+    Start LOAD INTO SNOWFLAKE RAW:
+      position:
+        x: -576
+        "y": 32
+      tempMetlId: 2092358
+    API CALL:
+      position:
+        x: 16
+        "y": 32
+      tempMetlId: 2092397
+    PRINT PREVIOUS JOB VARIABLES:
+      position:
+        x: -448
+        "y": 32
+      tempMetlId: 2092443
+    DEFINE DATE VARIABLES:
+      position:
+        x: -288
+        "y": 32
+      tempMetlId: 2092722
+    PRINT DATE VARIABLES:
+      position:
+        x: -144
+        "y": 32
+      tempMetlId: 2092821
+    TASK_HISTORY_CLEAN:
+      position:
+        x: 176
+        "y": 32
+      tempMetlId: 2095967
+    RETRY IF FAIL:
+      position:
+        x: 16
+        "y": 32
+      tempMetlId: 2105153

@@ -1,0 +1,139 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "CTRL_SYSTEMS"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    CTRL_SYSTEMS:
+      type: "create-table-v2"
+      transitions:
+        success:
+        - "Populate Table"
+      skipped: false
+      parameters:
+        componentName: "CTRL_SYSTEMS"
+        createMethod: "Replace"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        table: "CTRL_SYSTEMS"
+        snowflakeTableType: "Permanent"
+        columns:
+        - - "SOR_KEY"
+          - "VARCHAR"
+          - "10"
+          - ""
+          - ""
+          - "Yes"
+          - "Yes"
+          - ""
+          - ""
+        - - "SOR_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "CONTEXT"
+          - "VARCHAR"
+          - "1024"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "USE_CASE"
+          - "VARCHAR"
+          - "1024"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "INTERNAL_EXTERNAL"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "TIER"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "MARKETS"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "FACT_TYPE"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        - - "DIMENSION_TYPE"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        defaultDdlCollation: ""
+        primaryKeys:
+        - "SOR_KEY"
+        clusteringKeys:
+        dataRetentionTimeInDays: ""
+        comment: "Control Table for the SOR_KEY and any related System of Record Metadata"
+    Populate Table:
+      type: "run-transformation"
+      skipped: false
+      parameters:
+        componentName: "Populate Table"
+        transformationJob: "00 Data Ops/01 Control Tables/CTRL_SYSTEMS/02 CTRL_SYSTEMS\
+          \ Populate.tran.yaml"
+        setScalarVariables:
+        setGridVariables:
+design:
+  components:
+    Start 0:
+      position:
+        x: -210
+        "y": 100
+      tempMetlId: 2496
+    CTRL_SYSTEMS:
+      position:
+        x: -10
+        "y": 100
+      tempMetlId: 2497
+    Populate Table:
+      position:
+        x: 210
+        "y": 100
+      tempMetlId: 2499

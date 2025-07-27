@@ -1,0 +1,158 @@
+type: "transformation"
+version: "1.0"
+pipeline:
+  components:
+    SQL test:
+      type: "sql"
+      parameters:
+        componentName: "SQL test"
+        query: "    ${QUERY} AS \"RESULT\""
+    Additional information of the test:
+      type: "calculator"
+      sources:
+      - "SQL test"
+      parameters:
+        componentName: "Additional information of the test"
+        includeInputColumns: "Yes"
+        calculations:
+        - - "'${TEST_NAME}'"
+          - "TEST_NAME"
+        - - "'${TARGET}'"
+          - "TARGET"
+        - - "--double dollar signs make it as string. That is required here since\
+            \ the query may contains single quotes.\r\n$$${QUERY}$$ "
+          - "QUERY"
+    AUTOMATED_TESTS_RESULTS:
+      type: "table-output"
+      sources:
+      - "Additional information of the test"
+      parameters:
+        componentName: "AUTOMATED_TESTS_RESULTS"
+        warehouse: "[Environment Default]"
+        database: "[Environment Default]"
+        schema: "[Environment Default]"
+        targetTable: "AUTOMATED_TESTS_RESULTS"
+        fixDataTypeMismatches: "No"
+        columnMapping:
+        - - "TARGET"
+          - "TARGET"
+        - - "TEST_NAME"
+          - "TEST_NAME"
+        - - "QUERY"
+          - "QUERY"
+        - - "RESULT"
+          - "RESULT"
+        orderBy:
+        - - "TARGET"
+          - "Ascending"
+        - - "RESULT"
+          - "Ascending"
+        outputMode: "Append"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    TARGET:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+    QUERY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "SELECT 1"
+    TEST_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+    RESULT:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "PLACEHOLDER"
+design:
+  components:
+    SQL test:
+      position:
+        x: -190
+        "y": -40
+      tempMetlId: 1
+    Additional information of the test:
+      position:
+        x: -30
+        "y": -40
+      tempMetlId: 5
+    AUTOMATED_TESTS_RESULTS:
+      position:
+        x: 140
+        "y": -40
+      tempMetlId: 6
+  notes:
+    "1":
+      position:
+        x: -210
+        "y": -220
+      size:
+        height: 118
+        width: 250
+      theme: "yellow"
+      content: "Pipeline Text Variables Required: **QUERY, RESULT, TARGET, TEST_NAME**"
+    "2":
+      position:
+        x: -710
+        "y": -210
+      size:
+        height: 658
+        width: 480
+      theme: "white"
+      content: |-
+        #### Automated UAT Testing Transformation
+
+        ##### **Objective**
+
+        This transformation pipeline executes automated User Acceptance Tests (UAT) by running SQL queries and storing the results in a centralized table for analysis and reporting.
+
+        - Executes parameterized SQL tests against database objects
+        - Captures test metadata including test name, target object, and query details
+        - Stores test results in a standardized format for tracking and reporting
+        - Supports reusability across multiple testing scenarios
+
+        ##### **Logic**
+
+        1. The pipeline receives test parameters through variables (TEST_NAME, TARGET, QUERY)
+        2. The **SQL test** component executes the provided query and returns the result
+        3. The **Additional information of the test** component enriches the result with metadata (test name, target, query text)
+        4. The **AUTOMATED_TESTS_RESULTS** component appends the test results to a central tracking table
+        5. Results are ordered by TARGET and RESULT for consistent reporting
+
+        ##### **Variables usage**
+        |Variable | Purpose |
+        |---------|---------|
+        |TARGET | Identifies the database object being tested (table, view, etc.) |
+        |QUERY | Contains the SQL query to execute for the test |
+        |TEST_NAME | Descriptive name of the test being performed |
+        |RESULT | Stores the outcome of the test execution |
+
+        ##### **Maintenance**
+        | ID | Topic | Maintenance Description |
+        |----|-------|-------------------------|
+        |M1| Result Table Management | Periodically archive or clean up old test results to prevent the AUTOMATED_TESTS_RESULTS table from growing too large |
+        |M2| Variable Validation | Ensure that variables are properly set before execution to prevent incomplete test records |
+
+        ##### **Improvement opportunities**
+        | ID | Topic | Improvement Description |
+        |----|-------|-------------------------|
+        |I1| Test Status Classification | Add a status field (PASS/FAIL) based on result evaluation logic |
+        |I2| Timestamp Addition | Include execution timestamp to track when tests were performed |
+        |I3| Error Handling | Implement error handling to capture and log test execution failures |
+        |I4| Test Categories | Add test categorization to group related tests for better reporting |

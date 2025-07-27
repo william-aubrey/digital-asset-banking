@@ -1,0 +1,141 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "CTRL_LOAD_HISTORY"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    CTRL_LOAD_HISTORY:
+      type: "create-table-v2"
+      transitions:
+        success:
+        - "Sample Records"
+      skipped: false
+      parameters:
+        componentName: "CTRL_LOAD_HISTORY"
+        createMethod: "Create"
+        database: "${ev_database}"
+        schema: "${ev_controls_schema}"
+        table: "CTRL_LOAD_HISTORY_NEW"
+        snowflakeTableType: "Permanent"
+        columns:
+        - - "SOR_KEY"
+          - "VARCHAR"
+          - "10"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+        - - "FILE_KEY"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+        - - "FILE_NAME"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+        - - "FILE_SUFFIX"
+          - "VARCHAR"
+          - "255"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+        - - "FILE_DATE"
+          - "DATE"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+        - - "PROCESS_STEP"
+          - "VARCHAR"
+          - "64"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+        - - "PROCESS_END_TIME"
+          - "TIMESTAMP"
+          - ""
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+        - - "PROCESS_STATUS"
+          - "VARCHAR"
+          - "64"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+        - - "PROCESS_NOTE"
+          - "VARCHAR"
+          - "1024"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+        - - "ROW_COUNT"
+          - "NUMBER"
+          - "38"
+          - "0"
+          - ""
+          - "No"
+          - "No"
+          - ""
+        defaultDdlCollation: ""
+        primaryKeys:
+        clusteringKeys:
+        dataRetentionTimeInDays: ""
+        comment: "Control table for the history of stage, landing and clean table\
+          \ loading"
+    Sample Records:
+      type: "run-transformation"
+      skipped: true
+      parameters:
+        componentName: "Sample Records"
+        transformationJob: "00 Data Ops/01 Control Tables/CTRL_LOAD_HISTORY/02 CTRL_LOAD_HISTORY\
+          \ Populate Sample Records.tran.yaml"
+        setScalarVariables:
+        setGridVariables:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+design:
+  components:
+    Start 0:
+      position:
+        x: -210
+        "y": 120
+      tempMetlId: 2496
+    CTRL_LOAD_HISTORY:
+      position:
+        x: 10
+        "y": 120
+      tempMetlId: 2501
+    Sample Records:
+      position:
+        x: 250
+        "y": 120
+      tempMetlId: 2502

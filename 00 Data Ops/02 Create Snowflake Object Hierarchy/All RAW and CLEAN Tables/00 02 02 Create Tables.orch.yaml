@@ -1,0 +1,194 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    SCHEMA NAME:
+      type: "query-to-scalar"
+      transitions:
+        success:
+        - "gv_column_layout"
+      skipped: false
+      parameters:
+        componentName: "SCHEMA NAME"
+        mode: "Advanced"
+        query: |-
+          /* Note: this query will be run as a subquery for the purposes of sampling the data.
+             As such it will be restricted by any subquery limitations specified by the current platform. */
+             SELECT CONCAT('${jv_SCHEMA_TYPE}','_','${jv_SOR_KEY}') as SCHEMA_NAME
+        scalarVariableMapping:
+        - - "jv_SCHEMA_NAME"
+          - "SCHEMA_NAME"
+    gv_column_layout:
+      type: "query-to-grid"
+      transitions:
+        success:
+        - "Print Variables"
+      skipped: false
+      parameters:
+        componentName: "gv_column_layout"
+        mode: "Advanced"
+        query: |-
+          /* Note: this query will be run as a subquery for the purposes of sampling the data.
+             As such it will be restricted by any subquery limitations specified by the current platform. */
+
+          SELECT ORDINAL_POSITION, FIELD_NAME, DATA_TYPE, SIZE, PRECISION,  DEFAULT_VALUE, NOT_NULL, IS_UNIQUE, COMMENT
+          FROM ${ev_database}.CONTROLS.CTRL_TABLE_SCHEMAS
+          WHERE TABLE_NAME = '${jv_TABLE_NAME}'
+          AND SCHEMA_NAME = '${jv_SCHEMA_NAME}'
+          ORDER BY ORDINAL_POSITION
+        gridVariable: "gv_column_layout"
+        gridVariableMapping:
+        - - "ORDINAL_POSITION"
+          - "ORDINAL_POSITION"
+        - - "FIELD_NAME"
+          - "FIELD_NAME"
+        - - "DATA_TYPE"
+          - "DATA_TYPE"
+        - - "SIZE"
+          - "SIZE"
+        - - "PRECISION"
+          - "PRECISION"
+        - - "DEFAULT_VALUE"
+          - "DEFAULT_VALUE"
+        - - "NOT_NULL"
+          - "NOT_NULL"
+        - - "IS_UNIQUE"
+          - "IS_UNIQUE"
+        - - "COMMENT"
+          - "COMMENT"
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "SCHEMA NAME"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    Create Table 0:
+      type: "create-table-v2"
+      skipped: false
+      parameters:
+        componentName: "Create Table 0"
+        createMethod: "Replace"
+        database: "${ev_database}"
+        schema: "${jv_SCHEMA_NAME}"
+        table: "${jv_TABLE_NAME}"
+        snowflakeTableType: "Permanent"
+        columns:
+          fromGrid:
+            variable: "gv_column_layout"
+            columns:
+            - "FIELD_NAME"
+            - "DATA_TYPE"
+            - "SIZE"
+            - "PRECISION"
+            - "DEFAULT_VALUE"
+            - "NOT_NULL"
+            - "IS_UNIQUE"
+            - "COMMENT"
+            -
+        defaultDdlCollation: ""
+        primaryKeys:
+        clusteringKeys:
+        dataRetentionTimeInDays: ""
+        comment: ""
+      postProcessing:
+        updateOutputMessage: ""
+    Print Variables:
+      type: "print-variables"
+      transitions:
+        success:
+        - "Create Table 0"
+      parameters:
+        componentName: "Print Variables"
+        variablesToPrint:
+        - - "jv_SCHEMA_TYPE"
+        - - "jv_TABLE_NAME"
+        - - "gv_column_layout"
+        prefixText:
+        includeVariableName: "Yes"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+  variables:
+    jv_TABLE_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "REF_MARKET_TIERS"
+    jv_SOR_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "REFERENCE"
+    jv_SCHEMA_TYPE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "RAW"
+    jv_SCHEMA_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "RAW_REFERENCE"
+    gv_column_layout:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          ORDINAL_POSITION:
+            columnType: "NUMBER"
+          FIELD_NAME:
+            columnType: "TEXT"
+          DATA_TYPE:
+            columnType: "TEXT"
+          SIZE:
+            columnType: "TEXT"
+          PRECISION:
+            columnType: "TEXT"
+          DEFAULT_VALUE:
+            columnType: "TEXT"
+          NOT_NULL:
+            columnType: "TEXT"
+          IS_UNIQUE:
+            columnType: "TEXT"
+          COMMENT:
+            columnType: "TEXT"
+      defaultValue: []
+design:
+  components:
+    SCHEMA NAME:
+      position:
+        x: -50
+        "y": 10
+      tempMetlId: 3001
+    gv_column_layout:
+      position:
+        x: 100
+        "y": 10
+      tempMetlId: 3002
+    Start 0:
+      position:
+        x: -200
+        "y": 10
+      tempMetlId: 3003
+    Create Table 0:
+      position:
+        x: 380
+        "y": 10
+      tempMetlId: 3005
+    Print Variables:
+      position:
+        x: 230
+        "y": 10
+      tempMetlId: 3006
