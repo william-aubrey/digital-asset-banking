@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  CloudFormation template to create or update an S3 bucket and manage an IAM user
+  (optionally using existing resources). Supports safe updates without failures when
+  resources already exist.
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: S3 bucket name (created if UseExistingBucket is false)
+    Default: digital-assets-william-ryan-aubrey
+  UseExistingBucket:
+    Type: String
+    AllowedValues: ["true","false"]
+    Default: "true"
+    Description: "Set to 'true' to use an existing bucket; 'false' to create a new one."
+  UserName:
+    Type: String
+    Description: IAM user name to create if UseExistingUser is 'false'
+    Default: iam-dab-agent
+  UseExistingUser:
+    Type: String
+    AllowedValues: ["true","false"]
+    Default: "false"
+    Description: "Set to 'true' to use an existing IAM user; 'false' to create a new one."
+  ExistingUserArn:
+    Type: String
+    Description: ARN of an existing IAM user (required if UseExistingUser is 'true')
+    Default: ""
+
+Conditions:
+  CreateBucket: !Equals [ !Ref UseExistingBucket, "false" ]
+  CreateUser:   !Equals [ !Ref UseExistingUser,   "false" ]
+
+Resources:
+  AssetBucket:
+    Condition: CreateBucket
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref BucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  AssetBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Bucket: !Ref BucketName
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowUserList
+            Effect: Allow
+            Principal:
+              AWS: !If [ CreateUser, !GetAtt AssetUser.Arn, !Ref ExistingUserArn ]
+            Action:
+              - s3:ListBucket
+            Resource: !Sub arn:aws:s3:::${BucketName}
+          - Sid: AllowUserObjects
+            Effect: Allow
+            Principal:
+              AWS: !If [ CreateUser, !GetAtt AssetUser.Arn, !Ref ExistingUserArn ]
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+            Resource:
+              - !Sub arn:aws:s3:::${BucketName}/*
+
+  AssetUser:
+    Condition: CreateUser
+    Type: AWS::IAM::User
+    DeletionPolicy: Retain
+    Properties:
+      UserName: !Ref UserName
+      Path: /
+
+  AssetUserPolicy:
+    Condition: CreateUser
+    Type: AWS::IAM::Policy
+    DeletionPolicy: Retain
+    Properties:
+      PolicyName: S3AccessPolicy
+      Users: [ !Ref AssetUser ]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetObject
+              - s3:PutObject
+            Resource:
+              - !Sub arn:aws:s3:::${BucketName}
+              - !Sub arn:aws:s3:::${BucketName}/*
+
+  AssetUserAccessKey:
+    Condition: CreateUser
+    Type: AWS::IAM::AccessKey
+    DeletionPolicy: Retain
+    Properties:
+      UserName: !Ref AssetUser
+
+Outputs:
+  BucketName:
+    Description: S3 bucket name in use
+    Value: !Ref BucketName
+
+  IAMUserArn:
+    Description: ARN of the IAM user (created or existing)
+    Value: !If [ CreateUser, !GetAtt AssetUser.Arn, !Ref ExistingUserArn ]
+
+  AccessKeyId:
+    Condition: CreateUser
+    Description: Access Key ID for the new user
+    Value: !Ref AssetUserAccessKey
+
+  SecretAccessKey:
+    Condition: CreateUser
+    Description: Secret Access Key for the new user
+    Value: !GetAtt AssetUserAccessKey.SecretAccessKey
