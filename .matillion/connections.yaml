@@ -1,0 +1,20 @@
+# Matillion Connections Configuration
+
+# Snowflake connection
+connections:
+  snowflake:
+    type: snowflake
+    properties:
+      account: ${SECRET_REF:SNOWFLAKE_ACCOUNT}
+      warehouse: COMPUTE_WH
+      role: ACCOUNTADMIN
+      user: ${SECRET_REF:SNOWFLAKE_USER}
+      password: ${SECRET_REF:SNOWFLAKE_PASSWORD}
+
+  # S3 connection example
+  s3_data_source:
+    type: s3
+    properties:
+      region: us-east-1
+      access_key: ${SECRET_REF:AWS_ACCESS_KEY}
+      secret_key: ${SECRET_REF:AWS_SECRET_KEY}
