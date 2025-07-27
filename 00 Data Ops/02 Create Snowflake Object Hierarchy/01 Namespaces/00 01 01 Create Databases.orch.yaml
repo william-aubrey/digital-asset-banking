@@ -15,6 +15,8 @@ pipeline:
       transitions:
         success:
         - "Fixed Iterator 1"
+        unconditional:
+        - "Create Databases"
       iterationTarget: "Create Databases"
       skipped: false
       parameters:
@@ -26,13 +28,17 @@ pipeline:
         - - "${ev_database}"
         breakOnFailure: "No"
     Create Databases:
-      type: "sql-script"
+      type: "sql-executor"
       skipped: false
       parameters:
         componentName: "Create Databases"
+        scriptLocation: "Component"
         sqlScript: "CREATE DATABASE IF NOT EXISTS ${jv_database_name};"
     Fixed Iterator 1:
       type: "fixed-iterator"
+      transitions:
+        unconditional:
+        - "Grants on Databases"
       iterationTarget: "Grants on Databases"
       skipped: false
       parameters:
@@ -42,16 +48,16 @@ pipeline:
         - "jv_database_name"
         iterationValues:
         - - "${ev_database}"
-        - - "${ev_database}"
         breakOnFailure: "No"
     Grants on Databases:
-      type: "sql-script"
+      type: "sql-executor"
       skipped: false
       parameters:
         componentName: "Grants on Databases"
+        scriptLocation: "Component"
         sqlScript: |-
-          USE ROLE MATILLION_ROLE;
-          GRANT CREATE SCHEMA ON DATABASE ${jv_database_name} TO ROLE MATILLION_ROLE;
+          USE ROLE ${ev_pseudo_admin};
+          GRANT CREATE SCHEMA ON DATABASE ${jv_database_name} TO ROLE ACCOUNTADMIN;
   variables:
     jv_database_name:
       metadata:
@@ -73,24 +79,24 @@ design:
       position:
         x: -30
         "y": 20
-      tempMetlId: 2480
+      tempMetlId: 1
     Fixed Iterator 0:
       position:
-        x: 128
+        x: 140
         "y": 0
-      tempMetlId: 2481
+      tempMetlId: 2
     Create Databases:
       position:
-        x: 128
+        x: 140
         "y": 0
-      tempMetlId: 2482
+      tempMetlId: 3
     Fixed Iterator 1:
       position:
         x: 272
         "y": 0
-      tempMetlId: 2483
+      tempMetlId: 4
     Grants on Databases:
       position:
-        x: 272
+        x: 470
         "y": 0
-      tempMetlId: 2484
+      tempMetlId: 5
