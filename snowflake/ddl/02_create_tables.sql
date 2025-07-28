@@ -1,0 +1,78 @@
+-- ================================================================================================
+-- Snowflake DDL Script for Digital Asset Banking (DAB) Objects
+-- Final Version with Consistent Naming
+-- ================================================================================================
+-- Prequisite: This script should be run by a user with the DAB_ADMIN role.
+-- It assumes the `DAB_DATABASE` and the `DAB_ADMIN` role with ownership have been created.
+-- ================================================================================================
+
+USE ROLE DAB_ADMIN;
+USE WAREHOUSE DAB_WAREHOUSE;
+
+-- Create the primary schema for the application
+CREATE SCHEMA IF NOT EXISTS DAB_DATABASE.DAB_SCHEMA;
+
+-- Dimension for Asset Types
+CREATE OR REPLACE TABLE DAB_DATABASE.DAB_SCHEMA.DIM_ASSET_TYPES (
+    ASSET_TYPE_SK   NUMBER(38,0) IDENTITY START 1 INCREMENT 1,
+    ASSET_TYPE_NAME VARCHAR(50) UNIQUE NOT NULL COMMENT 'The name of the type (e.g., generic, cyoa)',
+    CONSTRAINT PK_DIM_ASSET_TYPES PRIMARY KEY (ASSET_TYPE_SK)
+);
+
+-- Dimension for Users
+CREATE OR REPLACE TABLE DAB_DATABASE.DAB_SCHEMA.DIM_USERS (
+    USER_SK NUMBER(38,0) IDENTITY START 1 INCREMENT 1,
+    USER_NK VARCHAR(255) UNIQUE NOT NULL COMMENT 'Natural key; the user ID from the application',
+    CONSTRAINT PK_DIM_USERS PRIMARY KEY (USER_SK)
+);
+
+-- Dimension for Assets
+CREATE OR REPLACE TABLE DAB_DATABASE.DAB_SCHEMA.DIM_ASSETS (
+    ASSET_SK                NUMBER(38,0) IDENTITY START 1 INCREMENT 1,
+    S3_KEY                  VARCHAR(1024) UNIQUE NOT NULL COMMENT 'Natural key; the unique S3 object key for the asset file',
+    ASSET_NAME              VARCHAR(255) NOT NULL,
+    ASSET_TYPE_SK           NUMBER(38,0) NOT NULL,
+    CURRENT_OWNER_USER_SK   NUMBER(38,0),
+    GRAPH_ROLE              VARCHAR(50),
+    UPLOAD_TIMESTAMP        TIMESTAMP_NTZ NOT NULL,
+    CONSTRAINT PK_DIM_ASSETS PRIMARY KEY (ASSET_SK),
+    CONSTRAINT FK_ASSETS_TO_ASSET_TYPES FOREIGN KEY (ASSET_TYPE_SK) REFERENCES DAB_DATABASE.DAB_SCHEMA.DIM_ASSET_TYPES(ASSET_TYPE_SK),
+    CONSTRAINT FK_ASSETS_TO_USERS FOREIGN KEY (CURRENT_OWNER_USER_SK) REFERENCES DAB_DATABASE.DAB_SCHEMA.DIM_USERS(USER_SK)
+);
+
+-- Fact table for all transactions
+CREATE OR REPLACE TABLE DAB_DATABASE.DAB_SCHEMA.FCT_ASSET_TRANSACTIONS (
+    TRANSACTION_PK        NUMBER(38,0) IDENTITY START 1 INCREMENT 1,
+    ASSET_SK              NUMBER(38,0) NOT NULL,
+    BUYER_USER_SK         NUMBER(38,0),
+    TRANSACTION_TYPE      VARCHAR(50) NOT NULL COMMENT 'Type of event (e.g., UPLOAD, PURCHASE)',
+    CREDITS_SPENT         NUMBER(38,0),
+    TRANSACTION_TIMESTAMP TIMESTAMP_NTZ NOT NULL,
+    CONSTRAINT PK_FCT_ASSET_TRANSACTIONS PRIMARY KEY (TRANSACTION_PK),
+    CONSTRAINT FK_TRANSACTIONS_TO_ASSETS FOREIGN KEY (ASSET_SK) REFERENCES DAB_DATABASE.DAB_SCHEMA.DIM_ASSETS(ASSET_SK),
+    CONSTRAINT FK_TRANSACTIONS_TO_USERS FOREIGN KEY (BUYER_USER_SK) REFERENCES DAB_DATABASE.DAB_SCHEMA.DIM_USERS(USER_SK)
+);
+
+-- Semantic View for Analytics
+CREATE OR REPLACE VIEW DAB_DATABASE.DAB_SCHEMA.VW_DAB_SEMANTIC AS
+SELECT
+  a.ASSET_SK,
+  a.ASSET_NAME,
+  t.ASSET_TYPE_NAME as ASSET_TYPE,
+  a.GRAPH_ROLE,
+  f.TRANSACTION_TYPE,
+  f.TRANSACTION_TIMESTAMP as TRANSACTION_TIME,
+  u.USER_NK as USER_ID,
+  f.CREDITS_SPENT
+FROM 
+  DAB_DATABASE.DAB_SCHEMA.FCT_ASSET_TRANSACTIONS f
+JOIN 
+  DAB_DATABASE.DAB_SCHEMA.DIM_ASSETS a ON f.ASSET_SK = a.ASSET_SK
+JOIN 
+  DAB_DATABASE.DAB_SCHEMA.DIM_ASSET_TYPES t ON a.ASSET_TYPE_SK = t.ASSET_TYPE_SK
+LEFT JOIN 
+  DAB_DATABASE.DAB_SCHEMA.DIM_USERS u ON f.BUYER_USER_SK = u.USER_SK;
+
+-- ================================================================================================
+-- DDL SCRIPT COMPLETE
+-- ================================================================================================
