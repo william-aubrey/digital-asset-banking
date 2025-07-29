@@ -1,0 +1,177 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    gv_column_layout:
+      type: "query-to-grid"
+      transitions:
+        success:
+        - "Python Script 1"
+      skipped: false
+      parameters:
+        componentName: "gv_column_layout"
+        mode: "Advanced"
+        query: |-
+          /* Note: this query will be run as a subquery for the purposes of sampling the data.
+             As such it will be restricted by any subquery limitations specified by the current platform. */
+
+          SELECT FIELD_NAME, DATA_TYPE, SIZE, PRECISION,  DEFAULT_VALUE, NOT_NULL, IS_UNIQUE, COMMENT
+          FROM ${ev_database}.CONTROLS.CTRL_TABLE_SCHEMAS
+          WHERE TABLE_NAME = '${jv_TABLE_NAME}'
+          AND SCHEMA_NAME = '${jv_SCHEMA_NAME}'
+          ORDER BY ORDINAL_POSITION
+        gridVariable: "gv_column_layout"
+        gridVariableMapping:
+        - - "FIELD_NAME"
+          - "FIELD_NAME"
+        - - "DATA_TYPE"
+          - "DATA_TYPE"
+        - - "SIZE"
+          - "SIZE"
+        - - "PRECISION"
+          - "PRECISION"
+        - - "DEFAULT_VALUE"
+          - "DEFAULT_VALUE"
+        - - "NOT_NULL"
+          - "NOT_NULL"
+        - - "IS_UNIQUE"
+          - "IS_UNIQUE"
+        - - "COMMENT"
+          - "COMMENT"
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "gv_column_layout"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    Python Script 1:
+      type: "python-script"
+      transitions:
+        success:
+        - "Create Table 0"
+      skipped: false
+      parameters:
+        componentName: "Python Script 1"
+        script: "###\n# Variables are directly accessible: \n#   print (myvar)\n#\
+          \ Updating a variable:\n#   context.updateVariable('myvar', 'new-value')\n\
+          # Grid Variables are accessible via the context:\n#   print (context.getGridVariable('mygridvar'))\n\
+          # Updating a grid variable:\n#   context.updateGridVariable('mygridvar',\
+          \ [['list','of'],['lists','!']])\n# A database cursor can be accessed from\
+          \ the context (Jython only):\n#   cursor = context.cursor()\n#   cursor.execute('select\
+          \ count(*) from mytable')\n#   rowcount = cursor.fetchone()[0]\n###\n\n\n\
+          print (context.getGridVariable('gv_column_layout'))\nprint(jv_SCHEMA_TYPE)\n\
+          print(jv_TABLE_NAME)\n"
+        interpreter: "Python 3"
+        timeout: "360"
+    Create Table 0:
+      type: "create-table-v2"
+      skipped: false
+      parameters:
+        componentName: "Create Table 0"
+        createMethod: "Replace"
+        database: "${ev_database}"
+        schema: "${jv_SCHEMA_NAME}"
+        table: "${jv_TABLE_NAME}"
+        snowflakeTableType: "Permanent"
+        columns:
+          fromGrid:
+            variable: "gv_column_layout"
+            columns:
+            - "FIELD_NAME"
+            - "DATA_TYPE"
+            - "SIZE"
+            - "PRECISION"
+            - "DEFAULT_VALUE"
+            - "NOT_NULL"
+            - "IS_UNIQUE"
+            - "COMMENT"
+        defaultDdlCollation: ""
+        primaryKeys:
+        clusteringKeys:
+        dataRetentionTimeInDays: ""
+        comment: ""
+  variables:
+    jv_SOR_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "WAREHOUSE"
+    jv_TABLE_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "TDLINX_OWNER_D"
+    jv_SCHEMA_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "ENTERPRISE"
+    jv_SCHEMA_TYPE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "RAW"
+    gv_column_layout:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          FIELD_NAME:
+            columnType: "TEXT"
+          DATA_TYPE:
+            columnType: "TEXT"
+          SIZE:
+            columnType: "TEXT"
+          PRECISION:
+            columnType: "TEXT"
+          DEFAULT_VALUE:
+            columnType: "TEXT"
+          NOT_NULL:
+            columnType: "TEXT"
+          IS_UNIQUE:
+            columnType: "TEXT"
+          COMMENT:
+            columnType: "TEXT"
+      defaultValue:
+      - - "Material Number"
+        - "VARCHAR"
+        - "255"
+        - ""
+        - ""
+        - "No"
+        - "No"
+        - ""
+design:
+  components:
+    gv_column_layout:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 1313508
+    Start 0:
+      position:
+        x: -176
+        "y": 0
+      tempMetlId: 1313509
+    Python Script 1:
+      position:
+        x: 144
+        "y": 0
+      tempMetlId: 1313510
+    Create Table 0:
+      position:
+        x: 368
+        "y": 0
+      tempMetlId: 1313511

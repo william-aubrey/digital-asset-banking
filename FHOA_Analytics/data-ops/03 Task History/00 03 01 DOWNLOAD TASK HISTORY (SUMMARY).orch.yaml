@@ -1,0 +1,129 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    DOWNLOAD TASK HISTORY:
+      type: "start"
+      transitions:
+        unconditional:
+        - "DEFINE DATES"
+      skipped: false
+      parameters:
+        componentName: "DOWNLOAD TASK HISTORY"
+    DEFINE DATES:
+      type: "query-to-scalar"
+      transitions:
+        success:
+        - "DATE ITERATOR"
+      skipped: false
+      parameters:
+        componentName: "DEFINE DATES"
+        mode: "Advanced"
+        query: "select \ncurrent_date()  as start_date,\ndateadd(days,1,current_date())\
+          \  as end_date,\nDATEDIFF(day,start_date,end_date) as MaxValue\n\n     \
+          \ \n\n"
+        scalarVariableMapping:
+        - - "jv_START_DATE"
+          - "START_DATE"
+        - - "jv_END_DATE"
+          - "END_DATE"
+        - - "jv_MAX_VALUE"
+          - "MAXVALUE"
+    DATE ITERATOR:
+      type: "loop-iterator"
+      iterationTarget: "LOAD INTO SNOWFLAKE RAW"
+      skipped: false
+      parameters:
+        componentName: "DATE ITERATOR"
+        concurrency: "Sequential"
+        variableToIterate: "jv_DIFF_NUMBER"
+        startingValue: "1"
+        incrementValue: "1"
+        endValue: "${jv_MAX_VALUE}"
+        breakOnFailure: "No"
+    LOAD INTO SNOWFLAKE RAW:
+      type: "run-orchestration"
+      skipped: false
+      parameters:
+        componentName: "LOAD INTO SNOWFLAKE RAW"
+        orchestrationJob: "00 00 Admin/00 03 Task History/00 03 02 LOAD INTO SNOWFLAKE\
+          \ RAW (SUMMARY)"
+        setScalarVariables:
+        - - "jv_DIFF_NUMBER"
+          - "${jv_DIFF_NUMBER}"
+        - - "jv_MAX_VALUE"
+          - "${jv_MAX_VALUE}"
+        - - "jv_START_DATE"
+          - "${jv_START_DATE}"
+        setGridVariables:
+  variables:
+    jv_END_DATE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_MAX_VALUE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_START_DATE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_DIFF_NUMBER:
+      metadata:
+        type: "NUMBER"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+design:
+  components:
+    DOWNLOAD TASK HISTORY:
+      position:
+        x: -672
+        "y": 0
+      tempMetlId: 2090485
+    DEFINE DATES:
+      position:
+        x: -528
+        "y": 0
+      tempMetlId: 2092109
+    DATE ITERATOR:
+      position:
+        x: -368
+        "y": 0
+      tempMetlId: 2092186
+    LOAD INTO SNOWFLAKE RAW:
+      position:
+        x: -368
+        "y": 32
+      tempMetlId: 2092392
+  notes:
+    "2104203":
+      position:
+        x: -837
+        "y": -195
+      size:
+        height: 154
+        width: 680
+      theme: "green"
+      content: |-
+        **Process: Call API to extract daily schedules summarized task history
+
+        Control:
+        - ${ev_database}.CONTROLS.MATILLION_TASK_HISTORY_RAW - Truncated Automatically
+        - ${ev_database}.CONTROLS.MATILLION_TASK_HISTORY_CLEAN - Daily Appends
+
+        Steps:
+        1 - Define Date Range
+        2 - Iterate through API call for each day
+        3 - Clean MATILLION_TASK_HISTORY_RAW into MATILLION_TASK_HISTORY_CLEAN one day at a time
