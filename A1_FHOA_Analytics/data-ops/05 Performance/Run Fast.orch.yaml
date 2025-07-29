@@ -1,0 +1,68 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Alter Warehouse 0"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    Alter Warehouse 0:
+      type: "alter-warehouse"
+      transitions:
+        success:
+        - "CHANGE THIS AS NEEDED"
+      skipped: false
+      parameters:
+        componentName: "Alter Warehouse 0"
+        warehouse: "[Environment Default]"
+        commandType: "Set"
+        properties:
+        - - "WAREHOUSE_SIZE"
+          - "LARGE"
+    Alter Warehouse 1:
+      type: "alter-warehouse"
+      skipped: false
+      parameters:
+        componentName: "Alter Warehouse 1"
+        warehouse: "[Environment Default]"
+        commandType: "Set"
+        properties:
+        - - "WAREHOUSE_SIZE"
+          - "XSMALL"
+    CHANGE THIS AS NEEDED:
+      type: "run-transformation"
+      transitions:
+        success:
+        - "Alter Warehouse 1"
+      skipped: false
+      parameters:
+        componentName: "CHANGE THIS AS NEEDED"
+        transformationJob: "04 Curated/VIP_DEPLETIONS_NSV_ACTUALIZED And BUDGETED"
+        setScalarVariables:
+        setGridVariables:
+design:
+  components:
+    Start 0:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 3725681
+    Alter Warehouse 0:
+      position:
+        x: 128
+        "y": 0
+      tempMetlId: 3725684
+    Alter Warehouse 1:
+      position:
+        x: 416
+        "y": 0
+      tempMetlId: 3725731
+    CHANGE THIS AS NEEDED:
+      position:
+        x: 249
+        "y": -1
+      tempMetlId: 3725748

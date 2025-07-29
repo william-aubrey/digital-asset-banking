@@ -1,0 +1,344 @@
+type: "transformation"
+version: "1.0"
+pipeline:
+  components:
+    READ MATILLION_TASK_HISTORY_RAW:
+      type: "table-input"
+      parameters:
+        componentName: "READ MATILLION_TASK_HISTORY_RAW"
+        database: "${ev_database}"
+        schema: "CONTROLS"
+        targetTable: "MATILLION_TASK_HISTORY_RAW"
+        columnNames:
+        - "id"
+        - "type"
+        - "groupName"
+        - "projectName"
+        - "versionID"
+        - "versionName"
+        - "environmentName"
+        - "jobName"
+        - "state"
+        - "enqueuedTime"
+        - "startTime"
+        - "endTime"
+        - "message"
+        - "completeTime"
+        - "customerID"
+        - "environmentID"
+        - "hasHistoricJobs"
+        - "jobID"
+        - "originatorID"
+        - "projectID"
+        - "rowCount"
+        - "tracksCompleteTime"
+        timeOffset: ""
+    DETECT CHANGES:
+      type: "detect-changes"
+      sources:
+      - "RENAME MATILLION_TASK_HISTORY_RAW"
+      - "READ MATILLION_TASK_HISTORY_CLEAN"
+      parameters:
+        componentName: "DETECT CHANGES"
+        masterTable: "READ MATILLION_TASK_HISTORY_CLEAN"
+        matchKeys:
+        - "ID"
+        compareColumns:
+        - "ID"
+        outputColumnMapping:
+        indicatorColumn: "Indicator"
+    READ MATILLION_TASK_HISTORY_CLEAN:
+      type: "table-input"
+      parameters:
+        componentName: "READ MATILLION_TASK_HISTORY_CLEAN"
+        database: "${ev_database}"
+        schema: "CONTROLS"
+        targetTable: "MATILLION_TASK_HISTORY_CLEAN"
+        columnNames:
+        - "ID"
+        - "TYPE"
+        - "GROUP_NAME"
+        - "PROJECT_NAME"
+        - "VERSION_ID"
+        - "VERSION_NAME"
+        - "ENVIRONMENT_NAME"
+        - "JOB_NAME"
+        - "STATE"
+        - "ENQUEUED_TIME"
+        - "START_TIME"
+        - "END_TIME"
+        - "MESSAGE"
+        - "COMPLETE_TIME"
+        - "CUSTOMER_ID"
+        - "ENVIRONMENT_ID"
+        - "HAS_HISTORIC_JOBS"
+        - "JOB_ID"
+        - "ORIGINATOR_ID"
+        - "PROJECT_ID"
+        - "ROW_COUNT"
+        - "TRACKS_COMPLETE_TIME"
+        - "TIMESTAMP"
+        timeOffset: ""
+    NEW RECORDS:
+      type: "filter"
+      sources:
+      - "DETECT CHANGES"
+      parameters:
+        componentName: "NEW RECORDS"
+        filterConditions:
+        - - "Indicator"
+          - "Is"
+          - "Equal to"
+          - "N"
+        combineCondition: "AND"
+    JOIN:
+      type: "join"
+      sources:
+      - "NEW RECORDS"
+      - "RENAME MATILLION_TASK_HISTORY_RAW"
+      parameters:
+        componentName: "JOIN"
+        mainTable: "RENAME MATILLION_TASK_HISTORY_RAW"
+        mainTableAlias: "R"
+        joins:
+        - - "NEW RECORDS"
+          - "N"
+          - "Inner"
+        joinExpressions:
+        - - "\"R\".\"ID\"=\"N\".\"ID\""
+          - "R_Inner_N"
+        columnMappings:
+        - - "R.ID"
+          - "ID"
+        - - "R.TYPE"
+          - "TYPE"
+        - - "R.GROUP_NAME"
+          - "GROUP_NAME"
+        - - "R.PROJECT_NAME"
+          - "PROJECT_NAME"
+        - - "R.VERSION_ID"
+          - "VERSION_ID"
+        - - "R.VERSION_NAME"
+          - "VERSION_NAME"
+        - - "R.ENVIRONMENT_NAME"
+          - "ENVIRONMENT_NAME"
+        - - "R.JOB_NAME"
+          - "JOB_NAME"
+        - - "R.STATE"
+          - "STATE"
+        - - "R.ENQUEUED_TIME"
+          - "ENQUEUED_TIME"
+        - - "R.START_TIME"
+          - "START_TIME"
+        - - "R.END_TIME"
+          - "END_TIME"
+        - - "R.MESSAGE"
+          - "MESSAGE"
+        - - "R.COMPLETE_TIME"
+          - "COMPLETE_TIME"
+        - - "R.CUSTOMER_ID"
+          - "CUSTOMER_ID"
+        - - "R.ENVIRONMENT_ID"
+          - "ENVIRONMENT_ID"
+        - - "R.HAS_HISTORIC_JOBS"
+          - "HAS_HISTORIC_JOBS"
+        - - "R.JOB_ID"
+          - "JOB_ID"
+        - - "R.ORIGINATOR_ID"
+          - "ORIGINATOR_ID"
+        - - "R.PROJECT_ID"
+          - "PROJECT_ID"
+        - - "R.ROW_COUNT"
+          - "ROW_COUNT"
+        - - "R.TRACKS_COMPLETE_TIME"
+          - "TRACKS_COMPLETE_TIME"
+    CALCULATOR:
+      type: "calculator"
+      sources:
+      - "JOIN"
+      parameters:
+        componentName: "CALCULATOR"
+        includeInputColumns: "Yes"
+        calculations:
+        - - "DATEADD(milliseconds, \"ENQUEUED_TIME\", '1970-01-01')"
+          - "ENQUEUED_TIME"
+        - - "DATEADD(milliseconds, \"START_TIME\", '1970-01-01')"
+          - "START_TIME"
+        - - "DATEADD(milliseconds, \"END_TIME\", '1970-01-01')"
+          - "END_TIME"
+        - - "DATEADD(milliseconds, \"COMPLETE_TIME\", '1970-01-01')"
+          - "COMPLETE_TIME"
+        - - "CURRENT_TIMESTAMP()"
+          - "TIMESTAMP"
+    RENAME MATILLION_TASK_HISTORY_RAW:
+      type: "rename"
+      sources:
+      - "READ MATILLION_TASK_HISTORY_RAW"
+      parameters:
+        componentName: "RENAME MATILLION_TASK_HISTORY_RAW"
+        columnMapping:
+          fromGrid:
+            variable: "RENAME_COLUMNS"
+            columns:
+            - "RAW"
+            - "TRANSITION"
+        includeInputColumns: "No"
+    MATILLION_TASK_HISTORY_CLEAN:
+      type: "table-output"
+      sources:
+      - "CALCULATOR"
+      parameters:
+        componentName: "MATILLION_TASK_HISTORY_CLEAN"
+        warehouse: "[Environment Default]"
+        database: "${ev_database}"
+        schema: "CONTROLS"
+        targetTable: "MATILLION_TASK_HISTORY_CLEAN"
+        fixDataTypeMismatches: "No"
+        columnMapping:
+        - - "ID"
+          - "ID"
+        - - "TYPE"
+          - "TYPE"
+        - - "GROUP_NAME"
+          - "GROUP_NAME"
+        - - "PROJECT_NAME"
+          - "PROJECT_NAME"
+        - - "VERSION_ID"
+          - "VERSION_ID"
+        - - "VERSION_NAME"
+          - "VERSION_NAME"
+        - - "ENVIRONMENT_NAME"
+          - "ENVIRONMENT_NAME"
+        - - "JOB_NAME"
+          - "JOB_NAME"
+        - - "STATE"
+          - "STATE"
+        - - "ENQUEUED_TIME"
+          - "ENQUEUED_TIME"
+        - - "START_TIME"
+          - "START_TIME"
+        - - "END_TIME"
+          - "END_TIME"
+        - - "MESSAGE"
+          - "MESSAGE"
+        - - "COMPLETE_TIME"
+          - "COMPLETE_TIME"
+        - - "CUSTOMER_ID"
+          - "CUSTOMER_ID"
+        - - "ENVIRONMENT_ID"
+          - "ENVIRONMENT_ID"
+        - - "HAS_HISTORIC_JOBS"
+          - "HAS_HISTORIC_JOBS"
+        - - "JOB_ID"
+          - "JOB_ID"
+        - - "ORIGINATOR_ID"
+          - "ORIGINATOR_ID"
+        - - "PROJECT_ID"
+          - "PROJECT_ID"
+        - - "ROW_COUNT"
+          - "ROW_COUNT"
+        - - "TRACKS_COMPLETE_TIME"
+          - "TRACKS_COMPLETE_TIME"
+        - - "TIMESTAMP"
+          - "TIMESTAMP"
+        orderBy:
+        outputMode: "Append"
+  variables:
+    RENAME_COLUMNS:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          RAW:
+            columnType: "TEXT"
+          TRANSITION:
+            columnType: "TEXT"
+      defaultValue:
+      - - "id"
+        - "ID"
+      - - "type"
+        - "TYPE"
+      - - "groupName"
+        - "GROUP_NAME"
+      - - "projectName"
+        - "PROJECT_NAME"
+      - - "versionID"
+        - "VERSION_ID"
+      - - "versionName"
+        - "VERSION_NAME"
+      - - "environmentName"
+        - "ENVIRONMENT_NAME"
+      - - "jobName"
+        - "JOB_NAME"
+      - - "state"
+        - "STATE"
+      - - "enqueuedTime"
+        - "ENQUEUED_TIME"
+      - - "startTime"
+        - "START_TIME"
+      - - "endTime"
+        - "END_TIME"
+      - - "message"
+        - "MESSAGE"
+      - - "completeTime"
+        - "COMPLETE_TIME"
+      - - "customerID"
+        - "CUSTOMER_ID"
+      - - "environmentID"
+        - "ENVIRONMENT_ID"
+      - - "hasHistoricJobs"
+        - "HAS_HISTORIC_JOBS"
+      - - "jobID"
+        - "JOB_ID"
+      - - "originatorID"
+        - "ORIGINATOR_ID"
+      - - "projectID"
+        - "PROJECT_ID"
+      - - "rowCount"
+        - "ROW_COUNT"
+      - - "tracksCompleteTime"
+        - "TRACKS_COMPLETE_TIME"
+design:
+  components:
+    READ MATILLION_TASK_HISTORY_RAW:
+      position:
+        x: 304
+        "y": 224
+      tempMetlId: 2094545
+    DETECT CHANGES:
+      position:
+        x: 528
+        "y": 96
+      tempMetlId: 2095001
+    READ MATILLION_TASK_HISTORY_CLEAN:
+      position:
+        x: 304
+        "y": 96
+      tempMetlId: 2095035
+    NEW RECORDS:
+      position:
+        x: 736
+        "y": 96
+      tempMetlId: 2095417
+    JOIN:
+      position:
+        x: 736
+        "y": 224
+      tempMetlId: 2095510
+    CALCULATOR:
+      position:
+        x: 928
+        "y": 224
+      tempMetlId: 2101601
+    RENAME MATILLION_TASK_HISTORY_RAW:
+      position:
+        x: 528
+        "y": 224
+      tempMetlId: 2101650
+    MATILLION_TASK_HISTORY_CLEAN:
+      position:
+        x: 1104
+        "y": 224
+      tempMetlId: 2102088

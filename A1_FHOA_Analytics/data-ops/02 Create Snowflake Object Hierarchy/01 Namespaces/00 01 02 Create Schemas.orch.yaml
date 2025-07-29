@@ -1,0 +1,122 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Grid Iterator 0"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    Grid Iterator 0:
+      type: "grid-iterator"
+      iterationTarget: "Create Schemas"
+      skipped: false
+      parameters:
+        componentName: "Grid Iterator 0"
+        gridVariable: "gv_snowflake_objects"
+        gridIteratorVariableMapping:
+        - - "DATABASE_NAME"
+          - "jv_database_name"
+        - - "SCHEMA_NAME"
+          - "jv_schema_name"
+        breakOnFailure: "No"
+        concurrency: "Sequential"
+    Create Schemas:
+      type: "sql-script"
+      skipped: false
+      parameters:
+        componentName: "Create Schemas"
+        sqlScript: "CREATE SCHEMA IF NOT EXISTS ${jv_database_name}.${jv_schema_name};"
+  variables:
+    jv_schema_name:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "dummy value"
+    jv_database_name:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: "dummy value"
+    gv_snowflake_objects:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          DATABASE_NAME:
+            columnType: "TEXT"
+          SCHEMA_NAME:
+            columnType: "TEXT"
+      defaultValue:
+      - - "${ev_database}"
+        - "RAW_VIP"
+      - - "${ev_database}"
+        - "CLEAN_VIP"
+      - - "${ev_database}"
+        - "CONTROLS"
+      - - "${ev_database}"
+        - "ENTERPRISE"
+      - - "${ev_database}"
+        - "CURATED"
+      - - "${ev_database}"
+        - "RAW_GREATVINES"
+      - - "${ev_database}"
+        - "CLEAN_GREATVINES"
+      - - "${ev_database}"
+        - "RAW_SAP"
+      - - "${ev_database}"
+        - "CLEAN_SAP"
+      - - "${ev_database}"
+        - "RAW_SPECTRA"
+      - - "${ev_database}"
+        - "CLEAN_SPECTRA"
+      - - "${ev_database}"
+        - "RAW_TDLINX"
+      - - "${ev_database}"
+        - "CLEAN_TDLINX"
+      - - "${ev_database}"
+        - "RAW_PLAN"
+      - - "${ev_database}"
+        - "CLEAN_PLAN"
+      - - "${ev_database}"
+        - "RAW_MAPPING"
+      - - "${ev_database}"
+        - "CLEAN_MAPPING"
+      - - "${ev_database}"
+        - "RAW_REFERENCE"
+      - - "${ev_database}"
+        - "CLEAN_REFERENCE"
+      - - "${ev_database}"
+        - "RAW_BRANDSCOPIC"
+      - - "${ev_database}"
+        - "CLEAN_BRANDSCOPIC"
+      - - "${ev_database}"
+        - "RAW_BRANDACTIVATE"
+      - - "${ev_database}"
+        - "CLEAN_BRANDACTIVATE"
+design:
+  components:
+    Start 0:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 2490
+    Grid Iterator 0:
+      position:
+        x: 144
+        "y": 0
+      tempMetlId: 2491
+    Create Schemas:
+      position:
+        x: 144
+        "y": 0
+      tempMetlId: 2492

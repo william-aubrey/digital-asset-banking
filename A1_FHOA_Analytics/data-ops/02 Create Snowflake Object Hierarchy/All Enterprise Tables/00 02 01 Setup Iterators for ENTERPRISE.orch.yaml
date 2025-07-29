@@ -1,0 +1,246 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Fixed Iterator 0:
+      type: "fixed-iterator"
+      iterationTarget: "Grid Iterator 0"
+      skipped: false
+      parameters:
+        componentName: "Fixed Iterator 0"
+        concurrency: "Sequential"
+        variablesToIterate:
+        - "jv_SCHEMA_TYPE"
+        iterationValues:
+        - - "CLEAN"
+        breakOnFailure: "No"
+    gv_file_extracts:
+      type: "query-to-grid"
+      transitions:
+        success:
+        - "Remove SORs"
+      skipped: false
+      parameters:
+        componentName: "gv_file_extracts"
+        mode: "Advanced"
+        query: "SELECT \nSOR_KEY,\nFILE_KEY,\nSF_SOURCE_TABLE_NAME\nFROM ${ev_database}.${ev_controls_schema}.CTRL_FILE_EXTRACTS\n\
+          WHERE FILE_FUNCTION IN ('SINGLE FILE EXTRACT','MULTI FILE EXTRACT')\nAND\
+          \ IS_ACTIVE = TRUE\nAND SF_SOURCE_TABLE_NAME IS NOT NULL"
+        gridVariable: "gv_file_extracts"
+        gridVariableMapping:
+        - - "SOR_KEY"
+          - "SOR_KEY"
+        - - "SF_SOURCE_TABLE_NAME"
+          - "TABLE_NAME"
+        - - "FILE_KEY"
+          - "FILE_KEY"
+    Start 0:
+      type: "start"
+      transitions:
+        unconditional:
+        - "gv_file_extracts"
+      skipped: false
+      parameters:
+        componentName: "Start 0"
+    Remove SORs:
+      type: "remove-from-grid"
+      transitions:
+        success:
+        - "Remove Tables"
+      skipped: false
+      parameters:
+        componentName: "Remove SORs"
+        targetGridVariable: "gv_file_extracts"
+        operation: "In"
+        keyColumns:
+        - "SOR_KEY"
+        valuesGrid:
+        - - "VIP"
+    Remove Tables:
+      type: "remove-from-grid"
+      transitions:
+        success:
+        - "Fixed Iterator 0"
+      skipped: false
+      parameters:
+        componentName: "Remove Tables"
+        targetGridVariable: "gv_file_extracts"
+        operation: "In"
+        keyColumns:
+        - "FILE_KEY"
+        valuesGrid:
+        - - "DISTDA.NYYYYMMDD.zip"
+    "00 02 02 Create Tables":
+      type: "run-orchestration"
+      skipped: false
+      parameters:
+        componentName: "00 02 02 Create Tables"
+        orchestrationJob: "00 00 Admin/00 02 Create Snowflake Data Tables/All RAW\
+          \ and CLEAN Tables/00 02 02 Create Tables"
+        setScalarVariables:
+        - - "jv_SCHEMA_TYPE"
+          - "${jv_SCHEMA_TYPE}"
+        - - "jv_SOR_KEY"
+          - "${jv_SOR_KEY}"
+        - - "jv_TABLE_NAME"
+          - "${jv_TABLE_NAME}"
+        setGridVariables:
+    Grid Iterator 0:
+      type: "grid-iterator"
+      iterationTarget: "00 02 02 Create Tables"
+      skipped: false
+      parameters:
+        componentName: "Grid Iterator 0"
+        gridVariable: "gv_file_extracts"
+        gridIteratorVariableMapping:
+        - - "TABLE_NAME"
+          - "jv_TABLE_NAME"
+        - - "SOR_KEY"
+          - "jv_SOR_KEY"
+        - - "FILE_KEY"
+          - "jv_FILE_KEY"
+        breakOnFailure: "No"
+        concurrency: "Sequential"
+  variables:
+    jv_SOR_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_FILE_KEY:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_TABLE_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_SCHEMA_NAME:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    jv_SCHEMA_TYPE:
+      metadata:
+        type: "TEXT"
+        description: ""
+        scope: "SHARED"
+        visibility: "PUBLIC"
+      defaultValue: ""
+    gv_column_layout:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          FIELD_NAME:
+            columnType: "TEXT"
+          DATA_TYPE:
+            columnType: "TEXT"
+          SIZE:
+            columnType: "TEXT"
+          PRECISION:
+            columnType: "TEXT"
+          DEFAULT_VALUE:
+            columnType: "TEXT"
+          NOT_NULL:
+            columnType: "TEXT"
+          IS_UNIQUE:
+            columnType: "TEXT"
+          COMMENT:
+            columnType: "TEXT"
+      defaultValue: []
+    gv_file_extracts:
+      metadata:
+        type: "GRID"
+        description: ""
+        scope: "COPIED"
+        visibility: "PUBLIC"
+        columns:
+          SOR_KEY:
+            columnType: "TEXT"
+          TABLE_NAME:
+            columnType: "TEXT"
+          FILE_KEY:
+            columnType: "TEXT"
+      defaultValue:
+      - - "SPECTRA"
+        - "PROFILES"
+        - ""
+design:
+  components:
+    Fixed Iterator 0:
+      position:
+        x: 624
+        "y": -96
+      tempMetlId: 1313520
+    gv_file_extracts:
+      position:
+        x: -32
+        "y": -96
+      tempMetlId: 1313521
+    Start 0:
+      position:
+        x: -176
+        "y": -96
+      tempMetlId: 1313522
+    Remove SORs:
+      position:
+        x: 160
+        "y": -96
+      tempMetlId: 1313523
+    Remove Tables:
+      position:
+        x: 336
+        "y": -96
+      tempMetlId: 1313525
+    "00 02 02 Create Tables":
+      position:
+        x: 624
+        "y": -40
+      tempMetlId: 1313526
+    Grid Iterator 0:
+      position:
+        x: 624
+        "y": -72
+      tempMetlId: 1313527
+  notes:
+    "1313502":
+      position:
+        x: -121
+        "y": -193
+      size:
+        height: 153
+        width: 185
+      theme: "green"
+      content: "This includes all systems and tables.  Limit the systems and/or tables\
+        \ to be created by adjusting the following two \"Remove from Grid\" components"
+    "1313524":
+      position:
+        x: 89
+        "y": -189
+      size:
+        height: 147
+        width: 150
+      theme: "red"
+      content: "Use this to run the job for one or more specific tables."
+    "1313503":
+      position:
+        x: 264
+        "y": -190
+      size:
+        height: 147
+        width: 150
+      theme: "red"
+      content: "Use this to run the job for one or more specific tables."
