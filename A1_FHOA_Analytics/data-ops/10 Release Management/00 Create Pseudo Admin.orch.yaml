@@ -1,0 +1,103 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Create Custom Role"
+      parameters:
+        componentName: "Start"
+    Create Custom Role:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Grant Object Creation Privileges"
+      skipped: false
+      parameters:
+        componentName: "Create Custom Role"
+        scriptLocation: "Component"
+        sqlScript: |-
+          USE ROLE USERADMIN;
+          CREATE ROLE ${ev_pseudo_admin} COMMENT = 'Custom admin role for managing users, roles, and objects.';
+    Grant Object Creation Privileges:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Grant Security Privileges"
+      skipped: false
+      parameters:
+        componentName: "Grant Object Creation Privileges"
+        scriptLocation: "Component"
+        sqlScript: |-
+          USE ROLE SYSADMIN;
+          GRANT CREATE DATABASE ON ACCOUNT TO ROLE ${ev_pseudo_admin};
+          GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE ${ev_pseudo_admin};
+    Grant Security Privileges:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Grant Power Privilege"
+      skipped: false
+      parameters:
+        componentName: "Grant Security Privileges"
+        scriptLocation: "Component"
+        sqlScript: |-
+          USE ROLE SECURITYADMIN;
+          GRANT CREATE USER ON ACCOUNT TO ROLE ${ev_pseudo_admin};
+          GRANT CREATE ROLE ON ACCOUNT TO ROLE ${ev_pseudo_admin};
+    Grant Power Privilege:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Create Admin User"
+      skipped: false
+      parameters:
+        componentName: "Grant Power Privilege"
+        scriptLocation: "Component"
+        sqlScript: |-
+          USE ROLE SECURITYADMIN;
+          GRANT MANAGE GRANTS ON ACCOUNT TO ROLE ${ev_pseudo_admin};
+    Create Admin User:
+      type: "sql-executor"
+      skipped: false
+      parameters:
+        componentName: "Create Admin User"
+        scriptLocation: "Component"
+        sqlScript: |-
+          USE ROLE SECURITYADMIN;
+          CREATE USER IF NOT EXISTS ${ev_pseudo_admin} PASSWORD = '**********' MUST_CHANGE_PASSWORD = FALSE;
+          GRANT ROLE ${ev_pseudo_admin} TO USER ${ev_pseudo_admin};
+design:
+  components:
+    Start:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 1
+    Create Custom Role:
+      position:
+        x: 200
+        "y": 0
+      tempMetlId: 2
+    Grant Object Creation Privileges:
+      position:
+        x: 400
+        "y": 0
+      tempMetlId: 3
+    Grant Security Privileges:
+      position:
+        x: 600
+        "y": 0
+      tempMetlId: 4
+    Grant Power Privilege:
+      position:
+        x: 800
+        "y": 0
+      tempMetlId: 5
+    Create Admin User:
+      position:
+        x: 1000
+        "y": 0
+      tempMetlId: 6
