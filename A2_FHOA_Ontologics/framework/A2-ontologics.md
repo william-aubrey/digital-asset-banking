@@ -117,4 +117,3 @@ Describes the "one to N" iterative improvement of an existing, published model b
 - **Mechanisms**: Snowflake `IDEF0_MODEL_DB`, ModelOps CI/CD Pipeline, Data Governance Team
 
 ---
-
