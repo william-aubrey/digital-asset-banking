@@ -12,6 +12,8 @@ This document provides the IDEF0-style decomposition for the **A3: Execute Heuri
 - **Outputs**: Raw Transactional & Performance Data (to A1 Analytics), Business Outcomes
 - **Mechanisms**: Software Development Teams, AI Assistants, Cloud Infrastructure, CI/CD Pipeline
 
+> **Note on Recursion**: The FHOA framework is recursive. The Analytics Engine (the `Data Pipeline Engine`, `BI Tools`, etc. that serve as mechanisms for A1) is itself a complex Heuristic. Therefore, the process of *building the analytics engine* is an instance of this A3 process, controlled by its own conceptual models from A2 (e.g., `dimensions_of_quality_in_a_data_pipeline.md`). The "operation" of this specific heuristic (A3.3) is the A1 function itself, creating a meta-feedback loop.
+
 ---
 
 ## A3 Decomposition: The Lifecycle of a Heuristic (Application)

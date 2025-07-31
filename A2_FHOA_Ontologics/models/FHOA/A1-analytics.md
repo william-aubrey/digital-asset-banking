@@ -12,6 +12,8 @@ This document provides the IDEF0-style decomposition for the **A1: Conduct Analy
 - **Outputs**: Improvement Insights (to A2 Ontologics), Performance Dashboards
 - **Mechanisms**: Data Pipeline Engine, Snowflake Data Warehouse, BI Tools, ML Frameworks, Data Analysts & Scientists
 
+> **Nomenclature**: The collection of mechanisms that perform the A1 function is formally named the **Agentic Insight Motor (AIM)**. It is the motor that drives the FHOA continuous improvement cycle.
+
 ---
 
 ## A1 Decomposition: The Cognitive Process of Analytics
