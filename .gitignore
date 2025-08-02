@@ -1,0 +1,30 @@
+# --- Security ---
+# Ignore Streamlit secrets. This is the most important rule for your app.
+# It prevents your Snowflake credentials from being committed to Git.
+ # Note: The directory must be named .streamlit (with a dot) for auto-detection.
+A3_FHOA_Heuristics/apps/digital-asset-banking/.streamlit/secrets.toml
+
+# Ignore general credential files
+*.env
+
+# --- Python ---
+# Ignore virtual environment folders
+/venv/
+/.venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore build artifacts and distribution folders
+/build/
+/dist/
+*.egg-info/
+
+# --- IDE / Editor ---
+# Ignore local configuration files for common editors
+.vscode/
+.idea/
+
+# --- Logs ---
+*.log
