@@ -1,0 +1,94 @@
+type: "orchestration"
+version:
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "ACCOUNTADMIN SQL"
+      parameters:
+        componentName: "Start"
+    ACCOUNTADMIN SQL:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "DAB_PLATFORM_ADMIN SQL"
+      parameters:
+        componentName: "ACCOUNTADMIN SQL"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: |-
+          USE ROLE ACCOUNTADMIN;
+          -- Step 1: Create the top-level Platform Admin role CREATE ROLE IF NOT EXISTS DAB_PLATFORM_ADMIN COMMENT = 'Top-level admin role for the DAB project. Can create users, roles, and databases.';
+          -- Step 2: Grant necessary privileges from SYSADMIN and SECURITYADMIN to the new Platform Admin role USE ROLE SYSADMIN; GRANT CREATE DATABASE ON ACCOUNT TO ROLE DAB_PLATFORM_ADMIN; GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE DAB_PLATFORM_ADMIN;
+          USE ROLE SECURITYADMIN; GRANT CREATE USER ON ACCOUNT TO ROLE DAB_PLATFORM_ADMIN; GRANT CREATE ROLE ON ACCOUNT TO ROLE DAB_PLATFORM_ADMIN; GRANT MANAGE GRANTS ON ACCOUNT TO ROLE DAB_PLATFORM_ADMIN;
+          -- Step 3: Grant the new Platform Admin role to your user for setup -- Replace with your actual user name GRANT ROLE DAB_PLATFORM_ADMIN TO USER "WAUBREY@PHDATA.IO";
+    DAB_PLATFORM_ADMIN SQL:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Grant Privileges SQL"
+      parameters:
+        componentName: "DAB_PLATFORM_ADMIN SQL"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: |-
+          USE ROLE DAB_PLATFORM_ADMIN;
+          -- Step 4: Create the application's core objects CREATE WAREHOUSE IF NOT EXISTS DAB_WAREHOUSE; CREATE DATABASE IF NOT EXISTS DAB_DATABASE; CREATE SCHEMA IF NOT EXISTS DAB_DATABASE.DAB_SCHEMA;
+          -- Step 5: Create the application's functional roles CREATE ROLE IF NOT EXISTS DAB_ADMIN COMMENT = 'Owns all DAB database objects.'; CREATE ROLE IF NOT EXISTS DAB_APP_USER COMMENT = 'Role for the Streamlit application service account.'; CREATE ROLE IF NOT EXISTS DAB_ANALYST COMMENT = 'Role for BI and reporting users.'; CREATE ROLE IF NOT EXISTS DAB_REGULATOR COMMENT = 'Read-only role for auditors.';
+          -- Step 6: Create the service account users -- NOTE: Replace placeholders with secure, generated passwords. CREATE USER IF NOT EXISTS SVC_DAB_APP PASSWORD = '<secure_password_placeholder>' DEFAULT_ROLE = DAB_APP_USER DEFAULT_WAREHOUSE = DAB_WAREHOUSE COMMENT = 'Service account for the DAB application backend.';
+          CREATE USER IF NOT EXISTS SVC_DAB_ANALYST PASSWORD = '<secure_password_placeholder>' DEFAULT_ROLE = DAB_ANALYST DEFAULT_WAREHOUSE = DAB_WAREHOUSE COMMENT = 'Service account for BI and analytics.';
+          -- Step 7: Create the role hierarchy GRANT ROLE DAB_ADMIN TO ROLE DAB_PLATFORM_ADMIN; GRANT ROLE DAB_APP_USER TO ROLE DAB_ADMIN; GRANT ROLE DAB_ANALYST TO ROLE DAB_ADMIN; GRANT ROLE DAB_REGULATOR TO ROLE DAB_ADMIN;
+          -- Grant roles to the service users GRANT ROLE DAB_APP_USER TO USER SVC_DAB_APP; GRANT ROLE DAB_ANALYST TO USER SVC_DAB_ANALYST;
+    Grant Privileges SQL:
+      type: "sql-executor"
+      transitions:
+        success:
+        - "Transfer Ownership SQL"
+      parameters:
+        componentName: "Grant Privileges SQL"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: |-
+          USE ROLE DAB_PLATFORM_ADMIN;
+          -- Step 8: Grant privileges to the functional roles -- APP USER privileges GRANT USAGE ON WAREHOUSE DAB_WAREHOUSE TO ROLE DAB_APP_USER; GRANT USAGE ON DATABASE DAB_DATABASE TO ROLE DAB_APP_USER; GRANT USAGE ON SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER; GRANT SELECT ON ALL VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER; GRANT SELECT, INSERT, UPDATE, DELETE ON FUTURE TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER; GRANT SELECT ON FUTURE VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER;
+          -- ANALYST privileges GRANT USAGE ON WAREHOUSE DAB_WAREHOUSE TO ROLE DAB_ANALYST; GRANT USAGE ON DATABASE DAB_DATABASE TO ROLE DAB_ANALYST; GRANT USAGE ON SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_ANALYST; GRANT SELECT ON ALL TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_ANALYST; GRANT SELECT ON ALL VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_ANALYST; GRANT SELECT ON FUTURE TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_ANALYST; GRANT SELECT ON FUTURE VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_ANALYST;
+          -- REGULATOR privileges GRANT USAGE ON WAREHOUSE DAB_WAREHOUSE TO ROLE DAB_REGULATOR; GRANT USAGE ON DATABASE DAB_DATABASE TO ROLE DAB_REGULATOR; GRANT USAGE ON SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_REGULATOR; GRANT SELECT ON ALL TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_REGULATOR; GRANT SELECT ON ALL VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_REGULATOR; GRANT SELECT ON FUTURE TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_REGULATOR; GRANT SELECT ON FUTURE VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_REGULATOR;
+    Transfer Ownership SQL:
+      type: "sql-executor"
+      parameters:
+        componentName: "Transfer Ownership SQL"
+        scriptLocation: "Component"
+        declareSqlVariables: "Include selected"
+        sqlScript: |-
+          USE ROLE DAB_PLATFORM_ADMIN;
+          -- Step 9: Transfer ownership of all objects to the DAB_ADMIN role for proper management -- Using REVOKE CURRENT GRANTS to handle dependent grants automatically GRANT OWNERSHIP ON WAREHOUSE DAB_WAREHOUSE TO ROLE DAB_ADMIN REVOKE CURRENT GRANTS; GRANT OWNERSHIP ON DATABASE DAB_DATABASE TO ROLE DAB_ADMIN REVOKE CURRENT GRANTS; GRANT OWNERSHIP ON SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_ADMIN REVOKE CURRENT GRANTS;
+          -- Grant future object ownership to DAB_ADMIN GRANT OWNERSHIP ON FUTURE SCHEMAS IN DATABASE DAB_DATABASE TO ROLE DAB_ADMIN; GRANT OWNERSHIP ON FUTURE TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_ADMIN; GRANT OWNERSHIP ON FUTURE VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_ADMIN;
+design:
+  components:
+    ACCOUNTADMIN SQL:
+      position:
+        x: 160
+        "y": 0
+      tempMetlId:
+    Start:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId:
+    DAB_PLATFORM_ADMIN SQL:
+      position:
+        x: 320
+        "y": 0
+      tempMetlId:
+    Grant Privileges SQL:
+      position:
+        x: 480
+        "y": 0
+      tempMetlId:
+    Transfer Ownership SQL:
+      position:
+        x: 640
+        "y": 0
+      tempMetlId:
