@@ -116,6 +116,14 @@ To design, develop, and deploy humanoid robotics systems through a self-replicat
 - Git-tracked chain of custody for all intellectual property
 - Use open-core licensing or dual-license models for software assets
 
+### Trademarks
+- First record of trademark specimen of use:
+-- Site: https://ouroborotic-robotics.printful.me/
+-- Product: https://ouroborotic-robotics.printful.me/product/the-ouroborotic-emblem-tee 
+
+#### Trademarking Process
+1. Image generation using Gemini and Sora for prompts and image iteration
+2. https://www.upscale.media/ used for upscaling dpi to make it print ready
 ---
 
 ## 10. Version-Controlled Business Structure
