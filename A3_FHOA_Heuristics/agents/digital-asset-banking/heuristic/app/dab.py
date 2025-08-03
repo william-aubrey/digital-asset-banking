@@ -186,4 +186,16 @@ elif choice == "Upload New Asset (S3)":
                     temp_file_path = tmp_file.name
                     try:
                         with st.spinner('Uploading to S3...'):
-                            rec = upload_asset(temp_file_path, {"name": name}, asset_type=
+                            rec = upload_asset(
+                                snowflake_connection=snowflake_conn,
+                                local_file_path=temp_file_path,
+                                metadata={"name": name},
+                                asset_type=asset_type
+                            )
+                        st.success("Asset uploaded successfully!")
+                        st.json(rec)
+                    except Exception as e:
+                        st.error(f"Upload failed: {e}")
+                        logging.error("Upload process failed.", exc_info=True)
+            else:
+                st.warning("Please provide a file and an asset name.")

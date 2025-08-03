@@ -42,7 +42,12 @@ For our human collaborators, activation involves setting up your development env
     ```
     *(Note: If `requirements.txt` does not exist, an initial task is to generate it.)*
 
-4.  **Configure Secrets:** Create a file at `app/.streamlit/secrets.toml` to store your credentials (e.g., for Snowflake). This file is git-ignored for security.
+4.  **Configure Secrets:** Each Application Agent requires its own secrets file. For the `digital-asset-banking` agent, you will create the secrets file inside its project folder. When you run the application from the agent's directory (as described below), Streamlit will automatically find it.
+
+    *   **Path:** `A3_FHOA_Heuristics/agents/digital-asset-banking/.streamlit/secrets.toml`
+    *   **Action:** Create the `.streamlit` directory and the `secrets.toml` file within it.
+    *   This file is git-ignored for security.
+
 
 ### 2. Run the Application
 
