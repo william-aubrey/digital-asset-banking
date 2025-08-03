@@ -1,8 +1,8 @@
 # --- Security ---
 # Ignore Streamlit secrets. This is the most important rule for your app.
 # It prevents your Snowflake credentials from being committed to Git.
- # Note: The directory must be named .streamlit (with a dot) for auto-detection.
-A3_FHOA_Heuristics/apps/digital-asset-banking/.streamlit/secrets.toml
+ # Note: The secrets file should be in a .streamlit directory next to your app.
+app/.streamlit/secrets.toml
 
 # Ignore general credential files
 *.env
