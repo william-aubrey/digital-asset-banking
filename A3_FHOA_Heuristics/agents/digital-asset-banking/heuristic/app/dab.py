@@ -34,7 +34,6 @@ except Exception as e:
 
 # --- Core DAB Platform (In-Memory Operations) ---
 # NOTE: This is used for upload/purchase logic but the source of truth for viewing is Snowflake.
-ASSET_STORE: List[Dict[str, Any]] = []
 _asset_type_plugins: Dict[str, Any] = {}
 
 def register_asset_type(asset_type: str, plugin: Any) -> None:
@@ -58,8 +57,9 @@ def upload_asset(snowflake_connection: Any, local_file_path: str, metadata: Dict
     # The S3 key determines the "folder" structure. e.g., "cyoa/my_file.png"
     s3_key = f"{asset_type}/{file_name}"
 
+    # This record is for local processing and return to UI.
+    # The database will generate the primary key (ASSET_ID).
     asset_record = {
-        'id': len(ASSET_STORE) + 1,
         'file_path': local_file_path,
         'metadata': metadata.copy(),
         'type': asset_type
@@ -79,10 +79,7 @@ def upload_asset(snowflake_connection: Any, local_file_path: str, metadata: Dict
     if plugin and hasattr(plugin, 'on_upload'):
         plugin.on_upload(asset_record)
 
-    # --- Snowflake INSERT Logic ---
-    # This replaces the in-memory ASSET_STORE.append()
-    ASSET_STORE.append(asset_record)
-    
+    # --- Snowflake INSERT Logic ---    
     logging.info("Writing asset metadata to Snowflake.")
     asset_name = metadata.get("name", "N/A")
     s3_key = asset_record['metadata'].get('s3_key')
@@ -99,17 +96,48 @@ def upload_asset(snowflake_connection: Any, local_file_path: str, metadata: Dict
 
     return asset_record # Return the record for UI display
 
-def purchase_asset(asset_id: int, buyer_id: str, credits: int) -> bool:
+def purchase_asset(snowflake_connection: Any, asset_id: int, buyer_id: str, credits: int) -> bool:
     """
-    Simulates a purchase workflow by updating the in-memory store.
-    TODO: This should be updated to execute a transaction in Snowflake.
+    Executes a purchase transaction in Snowflake by updating the asset's metadata.
     """
-    for a in ASSET_STORE:
-        if a['id'] == asset_id:
-            a['metadata']['owned_by'] = buyer_id
-            a['metadata']['spent_credits'] = credits
-            return True
-    return False
+    if not snowflake_connection:
+        raise ConnectionError("Snowflake is not configured. Cannot execute purchase.")
+
+    logging.info(f"Attempting to purchase asset {asset_id} for buyer {buyer_id}.")
+
+    # Step 1: Fetch the current metadata
+    select_sql = "SELECT METADATA_JSON FROM ASSETS WHERE ASSET_ID = %s;"
+    try:
+        with snowflake_connection.cursor() as cur:
+            cur.execute(select_sql, (asset_id,))
+            result = cur.fetchone()
+            if not result:
+                logging.error(f"Asset with ID {asset_id} not found.")
+                return False
+            
+            current_metadata = result[0]
+            if isinstance(current_metadata, str):
+                current_metadata = json.loads(current_metadata)
+
+    except Exception as e:
+        logging.error(f"Failed to fetch metadata for asset {asset_id}: {e}", exc_info=True)
+        raise
+
+    # Step 2: Update the metadata object
+    current_metadata['owned_by'] = buyer_id
+    current_metadata['spent_credits'] = credits
+    updated_metadata_json = json.dumps(current_metadata)
+
+    # Step 3: Write the updated metadata back to Snowflake
+    update_sql = "UPDATE ASSETS SET METADATA_JSON = PARSE_JSON(%s) WHERE ASSET_ID = %s;"
+    try:
+        with snowflake_connection.cursor() as cur:
+            cur.execute(update_sql, (updated_metadata_json, asset_id))
+        logging.info(f"Successfully updated asset {asset_id} for buyer {buyer_id}.")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to update asset {asset_id} in Snowflake: {e}", exc_info=True)
+        raise
 
 # --- CYOA Plugin ---
 class CYOAPlugin:
@@ -143,7 +171,7 @@ except Exception:
 
 # --- Sidebar Navigation ---
 st.sidebar.header("Navigation")
-menu = ["Asset Marketplace (Snowflake)", "Upload New Asset (S3)", "Purchase Asset (In-Memory)"]
+menu = ["Asset Marketplace (Snowflake)", "Upload New Asset (S3)", "Purchase Asset (Snowflake)"]
 choice = st.sidebar.selectbox("Menu", menu)
 
 # --- Page 1: Asset Marketplace (from Snowflake) ---
@@ -199,3 +227,31 @@ elif choice == "Upload New Asset (S3)":
                         logging.error("Upload process failed.", exc_info=True)
             else:
                 st.warning("Please provide a file and an asset name.")
+
+# --- Page 3: Purchase Asset (Snowflake) ---
+elif choice == "Purchase Asset (Snowflake)":
+    st.header("💵 Purchase Asset")
+    if not snowflake_conn:
+        st.error("Cannot purchase. Please configure your Snowflake connection.")
+    else:
+        st.info("This action will execute a transaction against the Snowflake database.")
+        asset_id_to_purchase = st.number_input("Asset ID to Purchase", min_value=1, step=1)
+        buyer = st.text_input("Buyer ID", "test_user")
+        cost = st.number_input("Credits to Spend", 10)
+        if st.button("Execute Purchase"):
+            try:
+                with st.spinner(f"Processing purchase for asset {asset_id_to_purchase}..."):
+                    success = purchase_asset(
+                        snowflake_connection=snowflake_conn,
+                        asset_id=asset_id_to_purchase,
+                        buyer_id=buyer,
+                        credits=cost
+                    )
+                if success:
+                    st.success(f"Asset {asset_id_to_purchase} purchased by {buyer}!")
+                    st.balloons()
+                else:
+                    st.error(f"Could not find or purchase asset with ID {asset_id_to_purchase}.")
+            except Exception as e:
+                st.error("An error occurred during the purchase.")
+                st.exception(e)

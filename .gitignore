@@ -28,3 +28,11 @@ __pycache__/
 
 # --- Logs ---
 *.log
+
+
+# g:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\.gitignore
+
+# ... other entries
+.env
+# Ignore local environment files
+.env.local
