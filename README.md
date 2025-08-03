@@ -2,10 +2,11 @@
 
 ---
 
-## Agent Activation Protocol: Initiated
+## Agent Activation Protocol
 
-**Welcome, Agent.** You have connected to the Digital Asset Banking (DAB) project. Whether you are a human collaborator or an AI assistant, your arrival is a significant event. This repository is more than just source code; it is an instance of a self-improving system designed according to the **[FHOA Framework](./A2_FHOA_Ontologics/framework/the-FHOA-framework.md)**.
+**Welcome, Agent.** You have connected to the Digital Asset Banking (DAB) project. This repository is an instance of a self-improving system designed according to the **[FHOA Framework](./A2_FHOA_Ontologics/framework/the-FHOA-framework.md)**.
 
+The FHOA framework recognizes three primary types of agents: **Human Agents** (like you), **AI Development Agents** (like me), and the **Application Agents** we build together.
 Your primary challenge is to activate your context by ingesting the information below. Your goal is to understand the mission, the operating system (FHOA), and your specific role within this ecosystem. Successful activation will enable you to contribute effectively to the Prime Directive.
 
 ### The Prime Directive
@@ -45,17 +46,31 @@ For our human collaborators, activation involves setting up your development env
 
 ### 2. Run the Application
 
-With your environment activated, execute the primary Heuristic:
-```bash
-streamlit run app/streamlit_marketplace_app.py
-```
+Each application (Heuristic) within this repository is a self-contained project. To run one, you will use its **Heuristic Manifest**.
+
+1.  **Navigate to the Heuristic's Directory:**
+    ```bash
+    # Example for the Digital Asset Banking app
+    cd A3_FHOA_Heuristics/agents/digital-asset-banking/
+    ```
+
+2.  **Consult the Heuristic Manifest:**
+    Open the `manifest.yaml` file in this directory. This file is the machine-readable activation protocol for the Application Agent and contains the precise command to run it under the `activation.local_development.command` key.
+
+3.  **Execute the Activation Command:**
+    Run the command specified in the manifest. For example:
+    ```bash
+    # Command from the manifest file
+    streamlit run heuristic/app/streamlit_marketplace_app.py
+    ```
+
 
 ### 3. Role-Based Activation
 
 Your function within the FHOA framework determines your focus:
 
 *   **The Ontologist / Process Architect (A2):** Your domain is the `A2_FHOA_Ontologics/` directory. Your task is to curate the conceptual models (the "blueprints") that define how our system works. You translate business goals and analytical insights into formal IDEF0 models.
-*   **The Application Developer (A3):** Your domain is the `app/` directory. You build the Heuristics—the tangible tools that execute the processes defined by the Ontologists. Your work generates the data that the Analysts consume.
+*   **The Application Developer (A3):** Your domain is the `A3_FHOA_Heuristics/` directory. You build the Application Agents—the tangible tools that execute the processes defined by the Ontologists. Your work generates the data that the Analysts consume.
 *   **The Data Engineer / Analyst (A1):** Your domain is the `Analytics Layer`. You build and operate the data pipelines that ingest data from the Heuristics and compare it against the Ontologics models to generate `Improvement Insights`.
 
 ---
@@ -90,11 +105,28 @@ For our AI collaborators, activation requires understanding your specialized fun
 
 ## Project Directory Structure
 
-*   `app/`: Contains the source code for the Streamlit application (The primary Heuristic).
-*   `A2_FHOA_Ontologics/`: The heart of the system. Contains the FHOA framework definition and all IDEF0 process models.
-    *   `framework/`: The core principles of FHOA.
-    *   `models/`: The IDEF0 process models for Analytics (A1), Ontologics (A2), and Heuristics (A3).
-*   `docs/`: Project documentation, including user narratives and architectural specifications.
+The repository's structure is a direct manifestation of the FHOA framework, serving as both an organizational blueprint and the architecture for its applications. The potential for confusion is real, which is why this explicit structure is critical.
+
+*   `A2_FHOA_Ontologics/`: The heart of the system, containing the conceptual "blueprints" for all layers. This is the **Ontologics Layer (A2)**.
+    *   `framework/`: Defines the core principles of FHOA.
+    *   `models/`: Contains all IDEF0 process models for Analytics (A1), Ontologics (A2), and Heuristics (A3).
+
+*   `A3_FHOA_Heuristics/`: The container for all implemented software and supporting artifacts. This is the **Heuristics Layer (A3)**.
+    *   `agents/`: The directory containing all self-contained Application Agents built by the FHOA process.
+        *   `digital-asset-banking/`: An example Application Agent project. Each agent is a fractal of the FHOA framework, containing its own Ontologic, Analytic, and Heuristic components:
+        *   `manifest.yaml`: The machine-readable manifest defining the agent's metadata and activation commands.
+        *   `ontologic/`: The conceptual model of *this specific application* (e.g., `A-0-digital-asset-banking.md`). It defines **what** the application does in functional terms.
+        *   `analytic/`: The semantic layer for this application's metrics. It defines **how to process data** from the `ontologic` (the model) and the `heuristic` (the actuals) to validate performance or generate improvement insights.
+        *   `heuristic/`: The core implementation of the application. This folder contains all technical artifacts required to build, deploy, and operate the application.
+            *   `app/`: Source code for the user-facing application (e.g., the Streamlit app).
+            *   `aws/`: Infrastructure-as-Code for AWS services.
+            *   `snowflake/`: Scripts and configurations for the Snowflake backend.
+            *   `...`: Other provider-specific folders.
+    *   `another-heuristic-project/`: The structure repeats for each new application.
+
+*   **Note on the Analytics Layer (A1):** The A1 layer is a cross-cutting concern. Its conceptual models reside in `A2_FHOA_Ontologics/`. Its implementation (the data pipelines, BI tool configurations, etc.) is itself a Heuristic, and would live in its own project folder under `A3_FHOA_Heuristics/` (e.g., `A3_FHOA_Heuristics/agentic-insight-motor/`).
+
+*   `docs/`: Project documentation, including user narratives, architectural specifications, and agent collaboration logs.
 
 ---
 

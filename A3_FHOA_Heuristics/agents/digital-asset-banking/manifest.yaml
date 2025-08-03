@@ -1,0 +1,24 @@
+# FHOA Application Agent Manifest for: digital-asset-banking
+# This file is the machine-readable activation protocol for this Agent.
+# It provides metadata for discovery, deployment, and operation.
+
+name: "digital-asset-banking"
+version: "0.1.0"
+description: "A Streamlit marketplace for managing and trading physical assets as digital tokens."
+
+# Defines how to run or interact with this Agent.
+# This corresponds to the FHOA process A3.3: Operate Application.
+activation:
+  local_development:
+    type: "streamlit"
+    entrypoint: "heuristic/app/streamlit_marketplace_app.py"
+    # The command to run from the root of this Application Agent's project folder.
+    command: "streamlit run heuristic/app/streamlit_marketplace_app.py"
+    description: "Runs the Streamlit application on a local development server."
+
+# Defines key source code locations, corresponding to FHOA process A3.1.
+source_map:
+  ui_app: "heuristic/app/"
+  cloud_infra_aws: "heuristic/aws/"
+  conceptual_model: "ontologic/"
+  metrics_model: "analytic/"
