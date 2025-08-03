@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Asset Banking: An Agentic-Activated Enterprise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+        }
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent;
+        }
+        .role-card {
+            cursor: pointer;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .role-card:hover {
+            transform: translateY(-5px);
+            border-color: #38bdf8; /* sky-400 */
+        }
+        .role-card.active {
+            transform: translateY(-5px);
+            border-color: #0ea5e9; /* sky-500 */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .icon-bg {
+            background-color: #f1f5f9; /* slate-100 */
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #details-container {
+            background-color: #f1f5f9; /* slate-100 */
+            border-radius: 1rem;
+            margin-top: 2rem;
+            transition: all 0.5s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 2rem;
+        }
+        #details-container.active {
+            max-height: 30rem; /* Increased to fit content */
+            padding: 2rem;
+        }
+        .details-panel {
+            display: none;
+        }
+        .details-panel.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Section 1: Hero Banner -->
+    <div class="section-container text-center">
+        <div class="icon-bg mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-4">Digital Asset Banking</h1>
+        <p class="text-lg md:text-xl text-slate-600">An Agentic-Activated Enterprise built on the FHOA Framework.</p>
+    </div>
+
+    <!-- Section 2: The Prime Directive -->
+    <div class="section-container bg-slate-100">
+        <div class="grid md:grid-cols-3 gap-8 items-center">
+            <div class="md:col-span-1 flex justify-center">
+                <div class="icon-bg p-6">
+                     <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 12.5C20 12.5 20 14.5 20 15.5C20 18.5 17.5 21 14.5 21C11.5 21 9 18.5 9 15.5C9 14.5 9 12.5 9 12.5" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14.5 3C17.5 3 20 5.5 20 8.5C20 9.59 19.55 10.59 19 11.25" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 11.25C8.45 10.59 8 9.59 8 8.5C8 5.5 11.5 3 14.5 3" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14.5 21C14.5 12.5 14.5 12.5 14.5 3" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M20 8.5C17.5 8.5 14.5 8.5 9 8.5" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="md:col-span-2">
+                <h2 class="text-3xl font-bold text-slate-800 mb-4">The Prime Directive</h2>
+                <p class="text-lg text-slate-600">Our mission is to build a decentralized digital asset banking system, bridging the tangible value of physical assets with the power of digital exchange.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Three Agent Ecosystem -->
+    <div class="section-container">
+        <h2 class="text-3xl font-bold text-slate-800 text-center mb-12">The Three Agent Ecosystem</h2>
+        <div class="grid md:grid-cols-3 gap-8 text-center">
+            <!-- Agent 1: Human -->
+            <div class="card">
+                <div class="icon-bg mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">Human Agents</h3>
+                <p class="text-slate-600">Provide the strategic direction, domain expertise, and final judgment. You are the architect and the visionary.</p>
+            </div>
+            <!-- Agent 2: AI -->
+            <div class="card">
+                <div class="icon-bg mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M12 12h.01"></path><path d="M17 12h.01"></path><path d="M7 12h.01"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">AI Development Agents</h3>
+                <p class="text-slate-600">Act as collaborators and accelerators, translating your vision into code, models, and analysis.</p>
+            </div>
+            <!-- Agent 3: Application -->
+            <div class="card">
+                <div class="icon-bg mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20V16"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">Application Agents</h3>
+                <p class="text-slate-600">The software we build. They execute the defined processes and generate the data needed for continuous improvement.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: The FHOA Team Roles (Interactive) -->
+    <div class="section-container bg-slate-100">
+        <h2 class="text-3xl font-bold text-slate-800 text-center mb-12">Your Role in the Framework</h2>
+        
+        <div class="card p-8">
+            <div class="flex flex-wrap justify-center gap-8 text-center">
+                <div id="ontologist-card" class="card role-card w-full sm:w-auto md:w-[30%]" onclick="toggleDetails('ontologist')">
+                    <div class="icon-bg mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">The Ontologist</h3>
+                    <p class="text-slate-600">Curates the "blueprints" that define how our system works.</p>
+                </div>
+                <div id="developer-card" class="card role-card w-full sm:w-auto md:w-[30%]" onclick="toggleDetails('developer')">
+                    <div class="icon-bg mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">The Developer</h3>
+                    <p class="text-slate-600">Builds the tangible tools that execute the processes.</p>
+                </div>
+                <div id="analyst-card" class="card role-card w-full sm:w-auto md:w-[30%]" onclick="toggleDetails('analyst')">
+                    <div class="icon-bg mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">The Analyst</h3>
+                    <p class="text-slate-600">Generates insights by comparing models to real-world data.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="details-container">
+            <div id="ontologist-details" class="details-panel">
+                <h4 class="text-2xl font-bold text-slate-800 mb-4">Ontologist / Process Architect (A2)</h4>
+                <p class="text-slate-600 mb-4">Your task is to translate business goals and analytical insights into formal IDEF0 models. You are the custodian of our system's conceptual integrity, ensuring our "blueprints" are accurate and clear.</p>
+                <div class="bg-white p-3 rounded-lg font-mono text-sm inline-block">
+                    <strong>Primary Domain:</strong> A2_FHOA_Ontologics/
+                </div>
+            </div>
+            <div id="developer-details" class="details-panel">
+                <h4 class="text-2xl font-bold text-slate-800 mb-4">Application Developer (A3)</h4>
+                <p class="text-slate-600 mb-4">You build the Application Agents—the tangible tools that execute the processes defined by the Ontologists. Your work generates the real-world performance data that the Analysts consume.</p>
+                <div class="bg-white p-3 rounded-lg font-mono text-sm inline-block">
+                    <strong>Primary Domain:</strong> A3_FHOA_Heuristics/
+                </div>
+            </div>
+            <div id="analyst-details" class="details-panel">
+                <h4 class="text-2xl font-bold text-slate-800 mb-4">Data Engineer / Analyst (A1)</h4>
+                <p class="text-slate-600 mb-4">You build and operate the data pipelines that ingest data from the Heuristics. You compare this "actual" data against the "planned" data from the Ontologics models to generate critical `Improvement Insights`.</p>
+                <div class="bg-white p-3 rounded-lg font-mono text-sm inline-block">
+                    <strong>Primary Domain:</strong> The Analytics Layer (Implemented as a Heuristic)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: The AI Agent Orchestra -->
+    <div class="section-container bg-slate-100">
+        <h2 class="text-3xl font-bold text-slate-800 text-center mb-4">Meet Your AI Collaborators</h2>
+        <p class="text-lg text-slate-600 text-center mb-12">A specialized AI agent for every task in our orchestra.</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="card text-center items-center">
+                <div class="icon-bg mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.94 11c.46-1.31.46-2.69 0-4L15 2l-3 9 8.94 0zM3.06 13c-.46 1.31-.46 2.69 0 4l6 5 3-9L3.06 13zM12 22l3-9-8.94 0 5.94 9zM12 2L9 11l8.94 0L12 2z"/></svg>
+                </div>
+                <h3 class="font-semibold text-slate-800">Gemini Code Assist</h3>
+                <p class="text-sm text-slate-500">The Problem Solver</p>
+            </div>
+             <div class="card text-center items-center">
+                <div class="icon-bg mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h2.5a2.5 2.5 0 1 1 0 5H2v-5zM2 7h4.5a2.5 2.5 0 1 0 0-5H2v5zM19.5 7H22v5h-2.5a2.5 2.5 0 1 1 0-5zM19.5 17H22v5h-4.5a2.5 2.5 0 1 1 0-5z"/></svg>
+                </div>
+                <h3 class="font-semibold text-slate-800">Matillion's Maia</h3>
+                <p class="text-sm text-slate-500">The Implementer</p>
+            </div>
+             <div class="card text-center items-center opacity-60">
+                <div class="icon-bg mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
+                </div>
+                <h3 class="font-semibold text-slate-800">AWS Q</h3>
+                <p class="text-sm text-slate-500">Future Specialist</p>
+            </div>
+             <div class="card text-center items-center opacity-60">
+                <div class="icon-bg mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                </div>
+                <h3 class="font-semibold text-slate-800">Snowflake Copilot</h3>
+                <p class="text-sm text-slate-500">Future Specialist</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 6: Architecture as Directory -->
+    <div class="section-container">
+        <h2 class="text-3xl font-bold text-slate-800 text-center mb-12">Our Architecture is Our Directory</h2>
+        <div class="bg-white p-8 rounded-lg shadow-lg font-mono text-sm text-slate-600 max-w-2xl mx-auto">
+            <!-- UPDATED: Added A1_FHOA_Analytics -->
+            <div class="flex items-center mb-4">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-sky-500"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <span>A1_FHOA_Analytics/</span>
+            </div>
+            <div class="flex items-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-sky-500"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                <span>A2_FHOA_Ontologics/</span>
+            </div>
+            <div class="flex items-center mb-2 ml-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-slate-400"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span>framework/</span>
+            </div>
+            <div class="flex items-center mb-4 ml-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-slate-400"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span>models/</span>
+            </div>
+
+            <div class="flex items-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-sky-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <span>A3_FHOA_Heuristics/</span>
+            </div>
+            <div class="flex items-center mb-2 ml-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-slate-400"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span>agents/</span>
+            </div>
+            <div class="flex items-center mb-2 ml-8">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-slate-400"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span>digital-asset-banking/</span>
+            </div>
+            <div class="border-l-2 border-slate-200 ml-10 pl-6 space-y-2">
+                <p>manifest.yaml</p>
+                <p>ontologic/</p>
+                <p>analytic/</p>
+                <p>heuristic/</p>
+            </div>
+        </div>
+        <p class="text-center mt-6 text-slate-600">The repository's structure is a direct manifestation of the FHOA framework.</p>
+    </div>
+
+    <!-- Section 7: Footer -->
+    <div class="section-container text-center">
+        <div class="icon-bg mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <h2 class="text-3xl font-bold text-slate-800">Activation Complete.</h2>
+        <p class="text-lg text-slate-600">Welcome to the team.</p>
+    </div>
+
+    <script>
+        let activeRole = null;
+
+        function toggleDetails(role) {
+            const allCards = document.querySelectorAll('.role-card');
+            const allDetails = document.querySelectorAll('.details-panel');
+            const detailsContainer = document.getElementById('details-container');
+            
+            const card = document.getElementById(role + '-card');
+            const details = document.getElementById(role + '-details');
+
+            if (activeRole === role) {
+                card.classList.remove('active');
+                detailsContainer.classList.remove('active');
+                setTimeout(() => { details.classList.remove('show'); }, 300);
+                activeRole = null;
+                return;
+            }
+
+            allCards.forEach(c => c.classList.remove('active'));
+            allDetails.forEach(d => d.classList.remove('show'));
+            
+            if(activeRole !== null) {
+                detailsContainer.classList.remove('active');
+            }
+
+            setTimeout(() => {
+                card.classList.add('active');
+                details.classList.add('show');
+                detailsContainer.classList.add('active');
+                activeRole = role;
+            }, 150);
+        }
+    </script>
+
+</body>
+</html>
