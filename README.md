@@ -61,7 +61,7 @@ Each application (Heuristic) within this repository is a self-contained project.
     Run the command specified in the manifest. For example:
     ```bash
     # Command from the manifest file
-    streamlit run heuristic/app/streamlit_marketplace_app.py
+    streamlit run heuristic/app/dab.py
     ```
 
 
