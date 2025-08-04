@@ -2,7 +2,7 @@
 # Ignore Streamlit secrets. This is the most important rule for your app.
 # It prevents your Snowflake credentials from being committed to Git by ignoring
 # the .streamlit directory.
-*.streamlit/
+.streamlit/
 
 # Ignore general credential files
 *.env
