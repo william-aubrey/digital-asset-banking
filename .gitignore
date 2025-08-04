@@ -3,7 +3,7 @@
 # It prevents your Snowflake credentials from being committed to Git by ignoring
 # the .streamlit directory inside any Application Agent folder.
 .streamlit/
-
+secrets.toml
 # Ignore general credential files
 *.env
 
