@@ -1,11 +1,12 @@
 # --- Security ---
 # Ignore Streamlit secrets. This is the most important rule for your app.
 # It prevents your Snowflake credentials from being committed to Git by ignoring
-# the .streamlit directory inside any Application Agent folder.
-.streamlit/
-.streamlit/secrets.toml
+# the .streamlit directory.
+*.streamlit/
+
 # Ignore general credential files
 *.env
+.env.local
 
 # --- Python ---
 # Ignore virtual environment folders
@@ -28,11 +29,3 @@ __pycache__/
 
 # --- Logs ---
 *.log
-
-
-# g:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\.gitignore
-
-# ... other entries
-.env
-# Ignore local environment files
-.env.local
