@@ -1,4 +1,4 @@
-# dab.py
+# main.py
 """
 The primary user interface for the Digital Asset Banking (DAB) project.
 This application consolidates S3 asset uploads and Snowflake data warehousing
@@ -21,22 +21,15 @@ import pandas as pd
 # --- Logging Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# --- Start of fix ---
-# Build a robust path to the .env file in the project's root directory.
-# This ensures the app can be run from any sub-directory.
-#
-# The current file is at: .../A3_FHOA_Heuristics/agents/digital-asset-banking/heuristic/app/dab.py
-# The project root is 5 levels up from this file's directory.
-try:
-    project_root = Path(__file__).resolve().parents[5]
-    dotenv_path = project_root / '.env'
-
-    if dotenv_path.exists():
-        load_dotenv(dotenv_path=dotenv_path)
-        logging.info(f"✅ Loaded environment variables from: {dotenv_path}")
-except IndexError:
-    logging.warning("⚠️ Could not determine project root. Relying on system environment variables.")
-# --- End of fix ---
+# --- Environment Variable Loading ---
+# Load the .env file located in the same directory as this script (the 'heuristic' folder).
+# This makes the application's environment configuration self-contained.
+dotenv_path = Path(__file__).parent / '.env'
+if dotenv_path.exists():
+    load_dotenv(dotenv_path=dotenv_path)
+    logging.info(f"✅ Loaded environment variables from: {dotenv_path}")
+else:
+    logging.warning(f"⚠️ .env file not found at {dotenv_path}. Relying on system environment variables.")
 
 # --- S3 Configuration ---
 # Initialize the S3 client and get the bucket name from environment variables.

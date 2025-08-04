@@ -122,8 +122,7 @@ The repository's structure is a direct manifestation of the FHOA framework, serv
         *   `manifest.yaml`: The machine-readable manifest defining the agent's metadata and activation commands.
         *   `ontologic/`: The conceptual model of *this specific application* (e.g., `A-0-digital-asset-banking.md`). It defines **what** the application does in functional terms.
         *   `analytic/`: The semantic layer for this application's metrics. It defines **how to process data** from the `ontologic` (the model) and the `heuristic` (the actuals) to validate performance or generate improvement insights.
-        *   `heuristic/`: The core implementation of the application. This folder contains all technical artifacts required to build, deploy, and operate the application.
-            *   `app/`: Source code for the user-facing application (e.g., the Streamlit app).
+        *   `heuristic/`: The core implementation of the application. This folder contains all technical artifacts required to build, deploy, and operate the application; including the primary source code executable for the user-facing application (e.g., the Streamlit app).
             *   `aws/`: Infrastructure-as-Code for AWS services.
             *   `snowflake/`: Scripts and configurations for the Snowflake backend.
             *   `...`: Other provider-specific folders.

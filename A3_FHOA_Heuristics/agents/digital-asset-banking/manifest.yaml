@@ -11,14 +11,14 @@ description: "A Streamlit marketplace for managing and trading physical assets a
 activation:
   local_development:
     type: "streamlit"
-    entrypoint: "heuristic/app/dab.py"
+    entrypoint: "heuristic/main.py"
     # The command to run from the root of this Application Agent's project folder.
-    command: "streamlit run heuristic/app/dab.py"
+    command: "streamlit run heuristic/main.py"
     description: "Runs the Streamlit application on a local development server."
 
 # Defines key source code locations, corresponding to FHOA process A3.1.
 source_map:
-  ui_app: "heuristic/app/"
+  ui_app: "heuristic/"
   cloud_infra_aws: "heuristic/aws/"
   conceptual_model: "ontologic/"
   metrics_model: "analytic/"
