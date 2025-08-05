@@ -153,6 +153,26 @@
     - "FTR-DEV-003" # Depends on the Snowflake user table
   notes: |
     This will require setting up OAuth 2.0 credentials in the Google Cloud Platform console and securely storing the client ID and secret.
+---
+- user_story: "As a card owner, I want to instantly transfer ownership of my asset to another user by having us both scan opposite sides of the physical card, so that we can trade in person with minimal friction."
+  actor: "end_user"
+  feature_id: "FTR-USER-002"
+  feature_name: "Transfer Asset via Dual-Sided Scan"
+  description: |
+    Provides a mechanism for two users who are physically present to execute an immediate transfer of a single digital asset. The current owner (Seller) and the acquirer (Buyer) each use the DAB application to scan opposite sides of the same physical card. The backend system detects this simultaneous action and automatically transfers the digital ownership.
+  priority: "must"
+  acceptance_criteria:
+    - "The app provides a 'Scan to Trade' interface."
+    - "The system can detect when two different users scan the front and back of the same card within a short time window (e.g., 5 seconds)."
+    - "Upon a successful dual-scan, the system correctly identifies the current owner and the acquirer."
+    - "The `CURRENT_OWNER_USER_SK` for the asset is automatically updated in the `DIM_ASSETS` table to the acquirer's user key."
+    - "A new transaction record with `TRANSACTION_TYPE` = 'TRANSFER' is created in the `FCT_ASSET_TRANSACTIONS` table."
+    - "Both the original owner and the new owner receive a near-instant confirmation message that the transfer is complete."
+  dependencies:
+    - "FTR-USER-001"
+  notes: |
+    This describes the Stage 1 "Raw Transfer" protocol. It intentionally omits confirmation steps to create the most frictionless experience possible. The primary security in this stage relies on the physical handling and presentation of the card, as a successful dual-scan results in an immediate and automatic transfer of ownership. Subsequent stages will introduce more explicit security handshakes.
+---
 # -----------------------------------------------------------------
 # Actor: Peer Developer (Decentralized Community)
 # -----------------------------------------------------------------
