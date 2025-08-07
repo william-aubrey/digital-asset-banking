@@ -10,6 +10,7 @@ import os
 import tempfile
 import json
 import boto3
+from datetime import datetime, timezone
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
@@ -23,7 +24,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # --- Environment Variable Loading ---
 # Load the .env file located in the same directory as this script (the 'heuristic' folder).
-# This makes the application's environment configuration self-contained.
+# This makes the application's environment configuration self-contained. It should contain
+# AWS_S3_BUCKET and AWS_REGION.
 dotenv_path = Path(__file__).parent / '.env'
 if dotenv_path.exists():
     load_dotenv(dotenv_path=dotenv_path)
@@ -32,14 +34,15 @@ else:
     logging.warning(f"⚠️ .env file not found at {dotenv_path}. Relying on system environment variables.")
 
 # --- S3 Configuration ---
-# Initialize the S3 client and get the bucket name from environment variables.
-# This is where the credentials you set in the terminal are used.
 S3_BUCKET = None
 s3_client = None
 try:
-    S3_BUCKET = os.environ.get('AWS_S3_BUCKET')
-    s3_client = boto3.client('s3')
-except Exception as e:
+    S3_BUCKET = os.environ.get("AWS_S3_BUCKET")
+    # Explicitly set the region to improve connection stability and ensure correct endpoint usage.
+    AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+    s3_client = boto3.client("s3", region_name=AWS_REGION)
+    logging.info(f"✅ S3 client initialized for region: {AWS_REGION}")
+except Exception:
     logging.error("S3 client could not be initialized. Ensure AWS credentials and region are set.", exc_info=True)
 
 # --- Core DAB Platform (In-Memory Operations) ---
@@ -53,35 +56,65 @@ def register_asset_type(asset_type: str, plugin: Any) -> None:
 def get_registered_types() -> List[str]:
     """Return a list of registered asset types."""
     return list(_asset_type_plugins.keys())
-
-def upload_asset(snowflake_connection: Any, local_file_path: str, metadata: Dict[str, Any], asset_type: str = 'generic') -> Dict[str, Any]:
+    
+def _get_or_create_sk(cursor: Any, table_name: str, key_column: str, value_column: str, value: str) -> int:
     """
-    Uploads a file to S3 and writes its metadata to the Snowflake ASSETS table.
+    Generic helper to get a surrogate key from a dimension table, creating the record if it doesn't exist.
+    This is a simplified approach suitable for a single-user app; for high concurrency, a MERGE statement would be better.
+    """
+    # Check if it exists
+    cursor.execute(f"SELECT {key_column} FROM {table_name} WHERE {value_column} = ?", (value,))
+    result = cursor.fetchone()
+    if result:
+        return result[0]
+    
+    # If not, insert it
+    logging.info(f"Creating new entry in {table_name} for value: {value}")
+    cursor.execute(f"INSERT INTO {table_name} ({value_column}) VALUES (?)", (value,))
+    
+    # Re-query to get the new key
+    cursor.execute(f"SELECT {key_column} FROM {table_name} WHERE {value_column} = ?", (value,))
+    result = cursor.fetchone()
+    if not result:
+        raise Exception(f"Failed to create and retrieve {key_column} from {table_name} for value: {value}")
+    return result[0]
+
+def _get_or_create_asset_type_sk(cursor: Any, asset_type_name: str) -> int:
+    """Gets the surrogate key for an asset type, creating it if it doesn't exist."""
+    return _get_or_create_sk(cursor, "DIM_ASSET_TYPES", "ASSET_TYPE_SK", "ASSET_TYPE_NAME", asset_type_name)
+
+def _get_or_create_user_sk(cursor: Any, user_nk: str) -> int:
+    """Gets the surrogate key for a user, creating it if it doesn't exist."""
+    return _get_or_create_sk(cursor, "DIM_USERS", "USER_SK", "USER_NK", user_nk)
+
+def upload_asset(snowflake_connection: Any, file_obj: Any, file_name: str, metadata: Dict[str, Any], asset_type: str = 'generic', uploader_id: str = 'default_uploader') -> Dict[str, Any]:
+    """
+    Uploads a file-like object to S3 and writes its metadata to the Snowflake star schema.
+    This is now wrapped in a transaction to ensure atomicity of database writes.
     """
     if not s3_client or not S3_BUCKET:
         raise ConnectionError("S3 is not configured. Cannot upload asset.")
     if not snowflake_connection:
         raise ConnectionError("Snowflake is not configured. Cannot write metadata.")
 
-    file_name = os.path.basename(local_file_path)
     # The S3 key determines the "folder" structure. e.g., "cyoa/my_file.png"
     s3_key = f"{asset_type}/{file_name}"
 
-    # This record is for local processing and return to UI.
-    # The database will generate the primary key (ASSET_ID).
     asset_record = {
-        'file_path': local_file_path,
+        'file_path': file_name, # Use the name for metadata purposes
         'metadata': metadata.copy(),
         'type': asset_type
     }
 
     try:
-        logging.info(f"Attempting to upload {local_file_path} to s3://{S3_BUCKET}/{s3_key}")
-        s3_client.upload_file(local_file_path, S3_BUCKET, s3_key)
+        logging.info(f"Attempting to upload file '{file_name}' to s3://{S3_BUCKET}/{s3_key}")
+        # Use upload_fileobj for in-memory file-like objects from Streamlit
+        file_obj.seek(0) # Ensure we're at the start of the file stream
+        s3_client.upload_fileobj(file_obj, S3_BUCKET, s3_key)
         logging.info("Upload successful.")
         # CRITICAL: Add the s3_key to the metadata upon successful upload.
         asset_record['metadata']['s3_key'] = s3_key
-    except (FileNotFoundError, NoCredentialsError, ClientError) as e:
+    except (NoCredentialsError, ClientError) as e:
         logging.error(f"An S3 client error occurred: {e}", exc_info=True)
         raise
 
@@ -89,65 +122,96 @@ def upload_asset(snowflake_connection: Any, local_file_path: str, metadata: Dict
     if plugin and hasattr(plugin, 'on_upload'):
         plugin.on_upload(asset_record)
 
-    # --- Snowflake INSERT Logic ---    
-    logging.info("Writing asset metadata to Snowflake.")
-    asset_name = metadata.get("name", "N/A")
-    s3_key = asset_record['metadata'].get('s3_key')
-    # Convert the entire metadata dictionary to a JSON string for the VARIANT column
-    metadata_json = json.dumps(asset_record['metadata'])
-
-    sql = """
-    INSERT INTO ASSETS (ASSET_NAME, ASSET_TYPE, S3_KEY, METADATA_JSON)
-    VALUES (%s, %s, %s, PARSE_JSON(%s));
-    """
+    # --- Snowflake Star Schema INSERT Logic ---
+    # This entire block is now a single transaction.
     with snowflake_connection.cursor() as cur:
-        cur.execute(sql, (asset_name, asset_type, s3_key, metadata_json))
-    logging.info(f"Successfully inserted asset '{asset_name}' into Snowflake.")
+        try:
+            cur.execute("BEGIN TRANSACTION;")
+            logging.info(f"Snowflake transaction started for asset: {file_name}")
+
+            # 1. Get/Create ASSET_TYPE_SK
+            asset_type_sk = _get_or_create_asset_type_sk(cur, asset_type)
+
+            # 2. Get/Create uploader's USER_SK
+            owner_user_sk = _get_or_create_user_sk(cur, uploader_id)
+
+            # 3. Insert into DIM_ASSETS
+            asset_name = metadata.get("name", "N/A")
+            graph_role = asset_record['metadata'].get('graph_role') # From CYOA plugin
+            upload_timestamp = datetime.now(timezone.utc)
+
+            dim_assets_sql = """
+            INSERT INTO DIM_ASSETS (S3_KEY, ASSET_NAME, ASSET_TYPE_SK, CURRENT_OWNER_USER_SK, GRAPH_ROLE, UPLOAD_TIMESTAMP)
+            VALUES (?, ?, ?, ?, ?, ?);
+            """
+            cur.execute(dim_assets_sql, (s3_key, asset_name, asset_type_sk, owner_user_sk, graph_role, upload_timestamp))
+            
+            # 4. Get the new ASSET_SK for the fact table record
+            cur.execute("SELECT ASSET_SK FROM DIM_ASSETS WHERE S3_KEY = ?", (s3_key,))
+            asset_sk_result = cur.fetchone()
+            if not asset_sk_result:
+                raise Exception(f"Failed to retrieve new ASSET_SK for S3 key {s3_key}")
+            asset_sk = asset_sk_result[0]
+            
+            # 5. Insert 'UPLOAD' event into FCT_ASSET_TRANSACTIONS
+            fct_sql = """
+            INSERT INTO FCT_ASSET_TRANSACTIONS (ASSET_SK, TRANSACTION_TYPE, TRANSACTION_TIMESTAMP)
+            VALUES (?, ?, ?);
+            """
+            cur.execute(fct_sql, (asset_sk, 'UPLOAD', upload_timestamp))
+            cur.execute("COMMIT;")
+            logging.info(f"Successfully inserted asset '{asset_name}' and committed to Snowflake.")
+        except Exception:
+            logging.error(f"An error occurred during Snowflake metadata insertion for asset {file_name}. Rolling back.", exc_info=True)
+            cur.execute("ROLLBACK;")
+            raise # Re-raise the exception to notify the user and potentially trigger cleanup
 
     return asset_record # Return the record for UI display
 
-def purchase_asset(snowflake_connection: Any, asset_id: int, buyer_id: str, credits: int) -> bool:
+def purchase_asset(snowflake_connection: Any, asset_sk: int, buyer_id: str, credits: int) -> bool:
     """
-    Executes a purchase transaction in Snowflake by updating the asset's metadata.
+    Executes a purchase transaction in Snowflake using the star schema.
+    This is now wrapped in a transaction to ensure atomicity.
     """
     if not snowflake_connection:
         raise ConnectionError("Snowflake is not configured. Cannot execute purchase.")
 
-    logging.info(f"Attempting to purchase asset {asset_id} for buyer {buyer_id}.")
+    logging.info(f"Attempting to purchase asset SK {asset_sk} for buyer {buyer_id}.")
 
-    # Step 1: Fetch the current metadata
-    select_sql = "SELECT METADATA_JSON FROM ASSETS WHERE ASSET_ID = %s;"
-    try:
-        with snowflake_connection.cursor() as cur:
-            cur.execute(select_sql, (asset_id,))
-            result = cur.fetchone()
-            if not result:
-                logging.error(f"Asset with ID {asset_id} not found.")
-                return False
+    # Use a single cursor for the entire transaction
+    with snowflake_connection.cursor() as cur:
+        try:
+            cur.execute("BEGIN TRANSACTION;")
+            logging.info("Transaction started.")
+
+            # 1. Get/Create the buyer's USER_SK
+            buyer_user_sk = _get_or_create_user_sk(cur, buyer_id)
+
+            # 2. Update the asset's owner in DIM_ASSETS
+            update_sql = "UPDATE DIM_ASSETS SET CURRENT_OWNER_USER_SK = ? WHERE ASSET_SK = ?;"
+            cur.execute(update_sql, (buyer_user_sk, asset_sk))
             
-            current_metadata = result[0]
-            if isinstance(current_metadata, str):
-                current_metadata = json.loads(current_metadata)
+            if cur.rowcount == 0:
+                logging.error(f"Asset with SK {asset_sk} not found in DIM_ASSETS. Rolling back.")
+                cur.execute("ROLLBACK;")
+                return False
 
-    except Exception as e:
-        logging.error(f"Failed to fetch metadata for asset {asset_id}: {e}", exc_info=True)
-        raise
-
-    # Step 2: Update the metadata object
-    current_metadata['owned_by'] = buyer_id
-    current_metadata['spent_credits'] = credits
-    updated_metadata_json = json.dumps(current_metadata)
-
-    # Step 3: Write the updated metadata back to Snowflake
-    update_sql = "UPDATE ASSETS SET METADATA_JSON = PARSE_JSON(%s) WHERE ASSET_ID = %s;"
-    try:
-        with snowflake_connection.cursor() as cur:
-            cur.execute(update_sql, (updated_metadata_json, asset_id))
-        logging.info(f"Successfully updated asset {asset_id} for buyer {buyer_id}.")
-        return True
-    except Exception as e:
-        logging.error(f"Failed to update asset {asset_id} in Snowflake: {e}", exc_info=True)
-        raise
+            # 3. Insert 'PURCHASE' event into FCT_ASSET_TRANSACTIONS
+            transaction_timestamp = datetime.now(timezone.utc)
+            fct_sql = """
+            INSERT INTO FCT_ASSET_TRANSACTIONS (ASSET_SK, BUYER_USER_SK, TRANSACTION_TYPE, CREDITS_SPENT, TRANSACTION_TIMESTAMP)
+            VALUES (?, ?, ?, ?, ?);
+            """
+            cur.execute(fct_sql, (asset_sk, buyer_user_sk, 'PURCHASE', credits, transaction_timestamp))
+            
+            cur.execute("COMMIT;")
+            logging.info(f"Transaction for asset SK {asset_sk} committed successfully.")
+            return True
+        except Exception:
+            logging.error(f"An error occurred during the purchase transaction for asset SK {asset_sk}. Rolling back.", exc_info=True)
+            cur.execute("ROLLBACK;")
+            # Re-raise the exception so the UI can display a generic error message
+            raise
 
 # --- CYOA Plugin ---
 class CYOAPlugin:
@@ -191,12 +255,14 @@ if choice == "Asset Marketplace (Snowflake)":
         st.error("Cannot display marketplace. Please configure your Snowflake connection in secrets.toml.")
     else:
         try:
-            table_name = "ASSETS"
+            # Use the correct dimension table name from the data model
+            table_name = "DIM_ASSETS"
             db_name = st.secrets.connections.snowflake.database
             schema_name = st.secrets.connections.snowflake.schema
             fully_qualified_table_name = f'"{db_name}"."{schema_name}"."{table_name}"'
 
-            query = f"SELECT * FROM {table_name} ORDER BY ASSET_ID DESC LIMIT 100;"
+            # Query the dimension table, ordering by the surrogate key
+            query = f"SELECT * FROM {fully_qualified_table_name} ORDER BY ASSET_SK DESC LIMIT 100;"
             st.info(f"Running query:\n```sql\n{query}\n```")
 
             df = snowflake_conn.query(query, ttl=600)
@@ -219,22 +285,27 @@ elif choice == "Upload New Asset (S3)":
 
         if st.button("Upload Asset"):
             if uploaded_file and name:
-                with tempfile.NamedTemporaryFile(suffix=f"_{uploaded_file.name}") as tmp_file:
-                    tmp_file.write(uploaded_file.getbuffer())
-                    temp_file_path = tmp_file.name
-                    try:
-                        with st.spinner('Uploading to S3...'):
-                            rec = upload_asset(
-                                snowflake_connection=snowflake_conn,
-                                local_file_path=temp_file_path,
-                                metadata={"name": name},
-                                asset_type=asset_type
-                            )
-                        st.success("Asset uploaded successfully!")
-                        st.json(rec)
-                    except Exception as e:
-                        st.error(f"Upload failed: {e}")
-                        logging.error("Upload process failed.", exc_info=True)
+                try:
+                    with st.spinner('Uploading to S3...'):
+                        # Pass the file-like object from Streamlit directly
+                        rec = upload_asset(
+                            snowflake_connection=snowflake_conn,
+                            file_obj=uploaded_file,
+                            file_name=uploaded_file.name,
+                            metadata={"name": name},
+                            asset_type=asset_type
+                        )
+                    st.success("✅ Asset uploaded successfully!")
+                    st.json(rec, expanded=False)
+                except ClientError as e:
+                    error_code = e.response.get("Error", {}).get("Code")
+                    st.error(f"An S3 error occurred: {error_code}")
+                    st.write("Please check your AWS credentials, region, and bucket permissions.")
+                    st.exception(e)
+                    logging.error("S3 Upload failed with ClientError.", exc_info=True)
+                except Exception as e:
+                    st.error(f"Upload failed: {e}")
+                    logging.error("Upload process failed.", exc_info=True)
             else:
                 st.warning("Please provide a file and an asset name.")
 
@@ -245,23 +316,24 @@ elif choice == "Purchase Asset (Snowflake)":
         st.error("Cannot purchase. Please configure your Snowflake connection.")
     else:
         st.info("This action will execute a transaction against the Snowflake database.")
-        asset_id_to_purchase = st.number_input("Asset ID to Purchase", min_value=1, step=1)
+        # The UI should ask for the Asset's Surrogate Key (SK)
+        asset_sk_to_purchase = st.number_input("Asset SK to Purchase", min_value=1, step=1)
         buyer = st.text_input("Buyer ID", "test_user")
         cost = st.number_input("Credits to Spend", 10)
         if st.button("Execute Purchase"):
             try:
-                with st.spinner(f"Processing purchase for asset {asset_id_to_purchase}..."):
+                with st.spinner(f"Processing purchase for asset {asset_sk_to_purchase}..."):
                     success = purchase_asset(
                         snowflake_connection=snowflake_conn,
-                        asset_id=asset_id_to_purchase,
+                        asset_sk=asset_sk_to_purchase,
                         buyer_id=buyer,
                         credits=cost
                     )
                 if success:
-                    st.success(f"Asset {asset_id_to_purchase} purchased by {buyer}!")
+                    st.success(f"Asset {asset_sk_to_purchase} purchased by {buyer}!")
                     st.balloons()
                 else:
-                    st.error(f"Could not find or purchase asset with ID {asset_id_to_purchase}.")
+                    st.error(f"Could not find or purchase asset with SK {asset_sk_to_purchase}.")
             except Exception as e:
                 st.error("An error occurred during the purchase.")
                 st.exception(e)

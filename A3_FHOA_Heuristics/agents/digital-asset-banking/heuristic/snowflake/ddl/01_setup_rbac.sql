@@ -74,9 +74,9 @@ GRANT ROLE DAB_ANALYST TO USER SVC_DAB_ANALYST;
 GRANT USAGE ON WAREHOUSE DAB_WAREHOUSE TO ROLE DAB_APP_USER;
 GRANT USAGE ON DATABASE DAB_DATABASE TO ROLE DAB_APP_USER;
 GRANT USAGE ON SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER;
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER;
 GRANT SELECT ON ALL VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER;
-GRANT SELECT, INSERT, UPDATE, DELETE ON FUTURE TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER;
+GRANT SELECT, INSERT, UPDATE ON FUTURE TABLES IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER;
 GRANT SELECT ON FUTURE VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_APP_USER;
 
 
@@ -113,3 +113,16 @@ GRANT OWNERSHIP ON FUTURE VIEWS IN SCHEMA DAB_DATABASE.DAB_SCHEMA TO ROLE DAB_AD
 -- ================================================================================================
 -- SETUP COMPLETE
 -- ================================================================================================
+
+-- ================================================================================================
+-- Optional: Password Management
+-- ================================================================================================
+-- This section is for an ACCOUNTADMIN to reset passwords for service accounts if needed.
+-- It is recommended to use a secure method for password management rather than hardcoding.
+-- Uncomment the lines below and replace the placeholder passwords to execute.
+-- ================================================================================================
+
+-- USE ROLE ACCOUNTADMIN;
+
+-- ALTER USER SVC_DAB_APP SET PASSWORD = '<REPLACE_WITH_SECURE_PASSWORD_FOR_APP>';
+-- ALTER USER SVC_DAB_ANALYST SET PASSWORD = '<REPLACE_WITH_SECURE_PASSWORD_FOR_ANALYST>';
