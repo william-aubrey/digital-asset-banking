@@ -315,6 +315,8 @@ elif choice == "Upload New Asset (S3)":
                         )
                     st.success("✅ Asset uploaded successfully!")
                     st.json(rec, expanded=False)
+                    # Clear the connection cache to ensure the marketplace view is updated
+                    st.cache_data.clear()
                 except ClientError as e:
                     error_code = e.response.get("Error", {}).get("Code")
                     st.error(f"An S3 error occurred: {error_code}")
@@ -350,6 +352,8 @@ elif choice == "Purchase Asset (Snowflake)":
                 if success:
                     st.success(f"Asset {asset_sk_to_purchase} purchased by {buyer}!")
                     st.balloons()
+                    # Clear the connection cache to ensure the marketplace view is updated
+                    st.cache_data.clear()
                 else:
                     st.error(f"Could not find or purchase asset with SK {asset_sk_to_purchase}.")
             except Exception as e:
