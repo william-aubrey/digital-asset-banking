@@ -43,11 +43,11 @@ This diagram breaks down the A-0 box into its three core FHOA functions, illustr
     * **Outputs**: `Improvement Insights`, `Performance Dashboards`
     * **Mechanisms**: `Data Pipeline Engine`, `BI Tools`, `Data Analysts`
 
-* **A2: Manage Ontologics**: Creates, refines, and governs the formal conceptual models (the "blueprints") of all system processes.
+* **A2: Manage Ontologic Models**: Creates, provisions, refines, and governs the formal conceptual models (the "blueprints") of all system processes.
     * **Inputs**: `Improvement Insights` (from A1), `Business Problems & Goals`
     * **Controls**: `FHOA Framework Principles`
     * **Outputs**: `Conceptual Process Models` (to control A1 and A3), `Refined System Processes`
-    * **Mechanisms**: `Process Analysts`, `IDEF0 Modeling Tools`, `Model Repository (Snowflake)`
+    * **Mechanisms**: `FHOA Synthesizer (Agent)`, `Process Analysts`, `Model Repository (Snowflake)`
 
 * **A3: Execute Heuristics**: Executes defined processes using instrumented tools and applications, generating the raw data needed for the analytics layer.
     * **Inputs**: `User/System Trigger`
@@ -66,54 +66,22 @@ This decomposition is detailed in the **FHOA Analytics (A1) Process Model**. The
 * **A1.4: Perform Prescriptive Analytics** (What should we do about it?)
 
 ---
-## A2: Manage Ontologics (Decomposition)
+## A2: Manage Ontologic Models (Decomposition)
 
-This diagram details the lifecycle of a conceptual process model.
+This decomposition is detailed in the **FHOA Ontologics (A2) Process Model**. The four sub-functions are:
 
-### A2.1: Model New Process
-* **Purpose**: To capture an undocumented business process in a formal IDEF0 model.
-* **Inputs**: `Business Problem & Goals`
-* **Controls**: `IDEF0 Modeling Standards`, `Domain Expert Knowledge`
-* **Outputs**: `Initial Process Model`
-* **Mechanisms**: `Process Analyst`, `Modeling Tool`
-
-### A2.2: Refine Existing Process Model
-* **Purpose**: To update a process model based on data-driven insights from the Analytics layer.
-* **Inputs**: `Improvement Insights` (from A1)
-* **Controls**: `Existing Process Model`, `Business Constraints`
-* **Outputs**: `Updated Process Model`, `Change Log`
-* **Mechanisms**: `Process Analyst`, `Decision Scientist`
-
-### A2.3: Publish Process Models
-* **Purpose**: To make the official version of a process model available as a control for the Heuristics and Analytics layers.
-* **Inputs**: `Approved Process Model`
-* **Controls**: `Governance Policy`
-* **Outputs**: `Published Conceptual Process Model`
-* **Mechanisms**: `Model Repository (Snowflake)`, `CI/CD Pipeline`
+* **A2.1: Provision Ontologic Infrastructure**
+* **A2.2: Create and Ingest New Process Model**
+* **A2.3: Refine Existing Process Model**
+* **A2.4: Present Model for Analysis**
 
 ---
 
 ## A3: Execute Heuristics (Decomposition)
 
-This diagram details how conceptual models are put into practice.
+This decomposition is detailed in the **FHOA Heuristics (A3) Process Model**. The four sub-functions are:
 
-### A3.1: Develop/Configure Heuristic Tool
-* **Purpose**: To build or configure the software application that codifies and executes a given process.
-* **Inputs**: `Published Conceptual Process Model` (from A2)
-* **Controls**: `Architectural Specifications`, `Development Standards`
-* **Outputs**: `Operational Heuristic Tool`, `Application Code`
-* **Mechanisms**: `Software Developer`, `CI/CD Pipeline`, `Cloud Infrastructure`
-
-### A3.2: Execute Process via Tool
-* **Purpose**: The operational use of the heuristic tool by an agent to perform a task.
-* **Inputs**: `User/System Trigger`
-* **Controls**: `Published Conceptual Process Model` (from A2)
-* **Outputs**: `Process Outcome`, `Raw Execution Events`
-* **Mechanisms**: `End User / AI Agent`, `Operational Heuristic Tool`
-
-### A3.3: Instrument & Log Performance
-* **Purpose**: To capture the raw events from process execution and format them for ingestion by the analytics layer.
-* **Inputs**: `Raw Execution Events`
-* **Controls**: `Logging & Telemetry Standards`
-* **Outputs**: `Raw Transactional & Performance Data` (to A1)
-* **Mechanisms**: `Logging Framework`, `Data Ingestion Pipeline`
+* **A3.1: Design & Develop Application**
+* **A3.2: Deploy Application**
+* **A3.3: Operate Application**
+* **A3.4: Generate Performance Data**

@@ -10,7 +10,16 @@ Please provide the complete raw markdown source of our conversation. Format the 
 
 
 
-## 2. Markdown response
+## 2. Markdown upcoming response
+
+Please provide your response in the form of the complete raw markdown source of my prompt and your response. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
+
+Create a new file located at this file path G:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\docs\sessions.  The file naming convention is YYYY-MM-DD-HHMM-gemini-chat.md. The date is [YYYY-MM-DD-HHMM].
+
+Copy the contents from your output into this file and save the file.
+
+
+## 3. Markdown last response
 
 Please provide the complete raw markdown source of my last prompt and your last response. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
 
@@ -19,6 +28,8 @@ Create a new file located at this file path G:\My Drive\A0 WRA\Digital Assets\Ba
 Copy the contents from your output into this file and save the file.
 
 
+
+## A. TERMINAL PROMPTS
 .venv\scripts\activate
 
 streamlit run main.py
