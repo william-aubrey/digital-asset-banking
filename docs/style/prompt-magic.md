@@ -12,12 +12,12 @@ Please provide the complete raw markdown source of our conversation. Format the 
 
 ## 2. Markdown response
 
-Please provide the complete raw markdown source of your response. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
+Please provide the complete raw markdown source of my last prompt and your last response. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
 
 
+.venv\scripts\activate
 
-
-
+streamlit run main.py
 
 
 
