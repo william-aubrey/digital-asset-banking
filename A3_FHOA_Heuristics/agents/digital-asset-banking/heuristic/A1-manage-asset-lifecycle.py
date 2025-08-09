@@ -1,4 +1,4 @@
-# main.py
+# A1-manage-asset-lifecycle.py
 """
 The primary user interface for the Digital Asset Banking (DAB) project.
 This application consolidates S3 asset uploads and Snowflake data warehousing
@@ -57,8 +57,11 @@ def get_registered_types() -> List[str]:
     """Return a list of registered asset types."""
     return list(_asset_type_plugins.keys())
     
-def _get_or_create_sk(cursor: Any, table_name: str, key_column: str, value_column: str, value: str) -> int:
+def _a121_get_or_create_sk(
+    cursor: Any, table_name: str, key_column: str, value_column: str, value: str
+) -> int:
     """
+    A1.2.1: A utility function that retrieves an existing surrogate key for a given business key or creates a new one if it doesn't exist.
     Generic helper to get a surrogate key from a dimension table, creating the record if it doesn't exist.
     This is a simplified approach suitable for a single-user app; for high concurrency, a MERGE statement would be better.
     """
@@ -81,14 +84,19 @@ def _get_or_create_sk(cursor: Any, table_name: str, key_column: str, value_colum
 
 def _get_or_create_asset_type_sk(cursor: Any, asset_type_name: str) -> int:
     """Gets the surrogate key for an asset type, creating it if it doesn't exist."""
-    return _get_or_create_sk(cursor, "DIM_ASSET_TYPES", "ASSET_TYPE_SK", "ASSET_TYPE_NAME", asset_type_name)
+    return _a121_get_or_create_sk(cursor, "DIM_ASSET_TYPES", "ASSET_TYPE_SK", "ASSET_TYPE_NAME", asset_type_name)
 
 def _get_or_create_user_sk(cursor: Any, user_nk: str) -> int:
     """Gets the surrogate key for a user, creating it if it doesn't exist."""
-    return _get_or_create_sk(cursor, "DIM_USERS", "USER_SK", "USER_NK", user_nk)
+    return _a121_get_or_create_sk(cursor, "DIM_USERS", "USER_SK", "USER_NK", user_nk)
 
-def upload_asset(snowflake_connection: Any, file_obj: Any, file_name: str, metadata: Dict[str, Any], asset_type: str = 'generic', uploader_id: str = 'default_uploader') -> Dict[str, Any]:
+def a12_process_new_asset_upload(
+    snowflake_connection: Any, file_obj: Any, file_name: str, metadata: Dict[str, Any], 
+    asset_type: str = 'generic', uploader_id: str = 'default_uploader'
+) -> Dict[str, Any]:
     """
+    A1.2: Handles the validation, S3 upload, and database metadata registration for a new asset.
+    
     Uploads a file-like object to S3 and writes its metadata to the Snowflake star schema.
     This is now wrapped in a transaction to ensure atomicity of database writes.
     """
@@ -168,9 +176,12 @@ def upload_asset(snowflake_connection: Any, file_obj: Any, file_name: str, metad
 
     return asset_record # Return the record for UI display
 
-def purchase_asset(snowflake_connection: Any, asset_sk: int, buyer_id: str, credits: int) -> bool:
+def a13_execute_asset_purchase(
+    snowflake_connection: Any, asset_sk: int, buyer_id: str, credits: int
+) -> bool:
     """
-    Executes a purchase transaction in Snowflake using the star schema.
+    A1.3: Updates asset ownership and records the transaction in the database.
+    
     This is now wrapped in a transaction to ensure atomicity.
     """
     if not snowflake_connection:
@@ -226,6 +237,33 @@ class CYOAPlugin:
 
 register_asset_type('cyoa', CYOAPlugin())
 
+def a11_display_asset_marketplace(snowflake_conn: Any) -> None:
+    """
+    A1.1: Queries the data warehouse to present a view of available assets to the user.
+    """
+    st.header("❄️ Asset Marketplace from Data Warehouse")
+    if not snowflake_conn:
+        st.error("Cannot display marketplace. Please configure your Snowflake connection in secrets.toml.")
+        return
+
+    try:
+        # Use the correct dimension table name from the data model
+        table_name = "DIM_ASSETS"
+        db_name = st.secrets.connections.snowflake.database
+        schema_name = st.secrets.connections.snowflake.schema
+        fully_qualified_table_name = f'"{db_name}"."{schema_name}"."{table_name}"'
+
+        # Query the dimension table, ordering by the surrogate key
+        query = f"SELECT * FROM {fully_qualified_table_name} ORDER BY ASSET_SK DESC LIMIT 100;"
+        st.info(f"Running query:\n```sql\n{query}\n```")
+
+        df = snowflake_conn.query(query, ttl=600)
+        st.dataframe(df, use_container_width=True)
+        st.success(f"Successfully displayed {len(df)} assets from `{fully_qualified_table_name}`.")
+    except Exception as e:
+        st.error(f"Failed to query Snowflake. Please check if the table exists and the user role has permissions.")
+        st.exception(e)
+
 # --- Streamlit Marketplace Application ---
 st.set_page_config(page_title="DAB Marketplace", layout="wide")
 st.title("🖼️ Digital Asset Banking Marketplace")
@@ -250,27 +288,7 @@ choice = st.sidebar.selectbox("Menu", menu)
 
 # --- Page 1: Asset Marketplace (from Snowflake) ---
 if choice == "Asset Marketplace (Snowflake)":
-    st.header("❄️ Asset Marketplace from Data Warehouse")
-    if not snowflake_conn:
-        st.error("Cannot display marketplace. Please configure your Snowflake connection in secrets.toml.")
-    else:
-        try:
-            # Use the correct dimension table name from the data model
-            table_name = "DIM_ASSETS"
-            db_name = st.secrets.connections.snowflake.database
-            schema_name = st.secrets.connections.snowflake.schema
-            fully_qualified_table_name = f'"{db_name}"."{schema_name}"."{table_name}"'
-
-            # Query the dimension table, ordering by the surrogate key
-            query = f"SELECT * FROM {fully_qualified_table_name} ORDER BY ASSET_SK DESC LIMIT 100;"
-            st.info(f"Running query:\n```sql\n{query}\n```")
-
-            df = snowflake_conn.query(query, ttl=600)
-            st.dataframe(df, use_container_width=True)
-            st.success(f"Successfully displayed {len(df)} assets from `{fully_qualified_table_name}`.")
-        except Exception as e:
-            st.error(f"Failed to query Snowflake. Please check if the table exists and the user role has permissions.")
-            st.exception(e)
+    a11_display_asset_marketplace(snowflake_conn)
 
 # --- Page 2: Upload New Asset (to S3) ---
 elif choice == "Upload New Asset (S3)":
@@ -288,7 +306,7 @@ elif choice == "Upload New Asset (S3)":
                 try:
                     with st.spinner('Uploading to S3...'):
                         # Pass the file-like object from Streamlit directly
-                        rec = upload_asset(
+                        rec = a12_process_new_asset_upload(
                             snowflake_connection=snowflake_conn,
                             file_obj=uploaded_file,
                             file_name=uploaded_file.name,
@@ -323,7 +341,7 @@ elif choice == "Purchase Asset (Snowflake)":
         if st.button("Execute Purchase"):
             try:
                 with st.spinner(f"Processing purchase for asset {asset_sk_to_purchase}..."):
-                    success = purchase_asset(
+                    success = a13_execute_asset_purchase(
                         snowflake_connection=snowflake_conn,
                         asset_sk=asset_sk_to_purchase,
                         buyer_id=buyer,

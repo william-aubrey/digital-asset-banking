@@ -13,11 +13,11 @@ This document serves as the implementation-level "digital twin" for the `A1: Man
 
 *   A1: Manage Asset Lifecycle (Context)
 *   A1: Decomposition of "Manage Asset Lifecycle"
-    *   A1.1: Display Asset Marketplace
-    *   A1.2: Process New Asset Upload
-    *   A1.3: Execute Asset Purchase
+    *   A1.1: Display Asset Marketplace (node A11)
+    *   A1.2: Process New Asset Upload (node A12))
+    *   A1.3: Execute Asset Purchase (node A13))
 *   A1.2: Decomposition of "Process New Asset Upload"
-    *   A1.2.1: Get or Create Surrogate Key
+    *   A1.2.1: Get or Create Surrogate Key (node A121))
 *   Appendix: SQL INSERT Statements
 
 ---

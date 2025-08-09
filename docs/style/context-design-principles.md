@@ -10,7 +10,7 @@ This document contains the core design principles for the Digital Asset Banking 
 
 - **Guideline:** All functions must be designed so they can be mapped to a hierarchical representation in the IDEF0 language.
 - **Implementation:**
-  - Function names must be active verbs or verb phrases (e.g., `upload_asset`, `calculate_fees`).
+  - Function names must be active verbs or verb phrases (e.g., `upload_asset`, `calculate_fees`).  Function names should be prefixed with their corresponding functinal model node label (e.g., "a11_display_asset_marketplace()")
   - Each function should represent a clear, decomposable action with well-defined Inputs, Controls, Outputs, and Mechanisms (ICOMs).
   - The overall code structure should reflect a top-down decomposition of the system's primary functions.
   - IDEF0.md file provides the full IDEF0-Compliant Functional Hierarchy standard. This file is located at G:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\A2_FHOA_Ontologics\framework\idef0\idef0.md
@@ -23,3 +23,5 @@ This document contains the core design principles for the Digital Asset Banking 
   - Dimension lookups should use a "get or create" pattern to avoid duplicate dimension records and ensure referential integrity.
   - The interpretation of the IDEF0.md file as a Snowflake Data Model SQL file is located at G:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\A2_FHOA_Ontologics\models\IDEF0\idef0-data-model.sql.
   
+  ### 3. Python Function Integrity
+  - New functions should be evaluated against the idef0 functional model to determine if a new function should be added to the idef0 functional model and inserted into the SQL script for inserting these functions into the A1_FHOA_Ontologics database as represented by the Snowflake Data Model SQL file located at G:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\A2_FHOA_Ontologics\models\IDEF0\idef0-data-model.sql.
