@@ -3,6 +3,29 @@
 This document provides a hierarchical decomposition of the processes for the Digital Asset Banking (DAB) platform, following the IDEF0 methodology.
 
 ---
+
+## Table of Contents
+
+* [A-0: Manage Digital Asset Banking Platform](#a-0-manage-digital-asset-banking-platform-context-diagram)
+    * [A1: Manage Asset Lifecycle](#a1-manage-asset-lifecycle-decomposition)
+        * [A1.1: Authenticate User](#a11-authenticate-user)
+        * [A1.2: Create Digital Asset](#a12-create-digital-asset)
+        * [A1.3: View Asset Data](#a13-view-asset-data)
+        * [A1.4: Purchase Digital Asset](#a14-purchase-digital-asset)
+    * [A2: Administer Platform Resources](#a2-administer-platform-resources-decomposition)
+        * [A2.1: Provision Cloud Infrastructure](#a21-provision-cloud-infrastructure)
+        * [A2.2: Deploy Application Code](#a22-deploy-application-code)
+        * [A2.3: Manage Security & RBAC](#a23-manage-security--rbac)
+        * [A2.4: Monitor Platform Health & Cost](#a24-monitor-platform-health--cost)
+    * [A3: Provide Analytics & Compliance](#a3-provide-analytics--compliance-decomposition)
+        * [A3.1: Ingest Transactional Data](#a31-ingest-transactional-data)
+        * [A3.2: Generate Business Analytics](#a32-generate-business-analytics)
+        * [A3.3: Provide Audit Trail Access](#a33-provide-audit-trail-access)
+
+---
+
+
+
 ## A-0: Manage Digital Asset Banking Platform (Context Diagram)
 
 This is the highest-level view, defining the overall scope and boundary of the system.

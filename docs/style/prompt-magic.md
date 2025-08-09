@@ -14,6 +14,10 @@ Please provide the complete raw markdown source of our conversation. Format the 
 
 Please provide the complete raw markdown source of my last prompt and your last response. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
 
+Create a new file located at this file path G:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\docs\sessions.  The file naming convention is YYYY-MM-DD-HHMM-gemini-chat.md. The date is [YYYY-MM-DD-HHMM].
+
+Copy the contents from your output into this file and save the file.
+
 
 .venv\scripts\activate
 
@@ -99,3 +103,28 @@ This document contains a collection of "magic prompts" designed to elicit specif
     ```
 *   **Expected Output:** A markdown response with three specific H3 headings: "Analysis of the Errors", "The Root Cause", and "The Solution", each with detailed explanations.
 
+---
+
+## 4. Code Generation & Refactoring
+
+### 4.1. Generate Code with Design Constraints
+
+*   **Goal:** To generate or refactor code that must adhere to specific, non-obvious design principles (like IDEF0).
+*   **Challenge:** The AI needs to be explicitly reminded of the design constraints during each request to ensure compliance.
+*   **The "Magic" Prompt:**
+    ```
+    <OBJECTIVE>
+    {{Briefly describe the goal, e.g., "Refactor the purchase_asset function."}}
+    </OBJECTIVE>
+
+    <GUIDING_PRINCIPLES>
+    - **IDEF0 Hierarchy:** All functions must be designed so they can be mapped to a hierarchical representation in IDEF0 language. Functions should be named with active verbs and represent a clear, decomposable action.
+    - **[Other Principle]:** {{Add any other principles as needed.}}
+    </GUIDING_PRINCIPLES>
+
+    <REQUEST>
+    {{Your specific request, e.g., "Please refactor the following function..."}}
+    </REQUEST>
+    ```
+*   **Expected Output:** Code that not only fulfills the request but is also explicitly designed and evaluated against the stated principles.
+*   **Expected Output:** A markdown response with three specific H3 headings: "Analysis of the Errors", "The Root Cause", and "The Solution", each with detailed explanations.
