@@ -31,16 +31,20 @@ def a242_fetch_idef0_model_data(conn, model_id):
         return None, None
 
     with st.spinner(f"Fetching data for model {model_id}..."):
-        # Mock query for now
-        # In a real scenario, you would query your BOXES and ARROWS tables
-        # based on the model_id.
         try:
-            # Example query to get boxes
-            boxes_query = f"SELECT * FROM BOXES WHERE MODEL_ID = '{model_id}';"
+            # Query for FUNCTIONS (boxes) based on the DDL
+            boxes_query = f"SELECT * FROM ONTOLOGICS.IDEF0.FUNCTIONS WHERE MODEL_ID = {model_id};"
             boxes_df = conn.query(boxes_query)
 
-            # Example query to get arrows
-            arrows_query = f"SELECT * FROM ARROWS WHERE MODEL_ID = '{model_id}';"
+            # Query for FUNCTION_ENTITIES (arrows) and join with ENTITIES to get names
+            # This query gets all arrow-like connections for a given model.
+            arrows_query = f"""
+                SELECT fe.*, e.ENTITY_NAME, e.DESCRIPTION
+                FROM ONTOLOGICS.IDEF0.FUNCTION_ENTITIES fe
+                JOIN ONTOLOGICS.IDEF0.ENTITIES e ON fe.ENTITY_ID = e.ENTITY_ID
+                JOIN ONTOLOGICS.IDEF0.FUNCTIONS f ON fe.FUNCTION_ID = f.FUNCTION_ID
+                WHERE f.MODEL_ID = {model_id};
+            """
             arrows_df = conn.query(arrows_query)
 
             return boxes_df, arrows_df
