@@ -67,10 +67,10 @@ Describes the "zero to one" creation of a conceptual model. This involves human-
 
 ### A2.2.3: Ingest and Persist Model
 - **Purpose**: To parse the formal IDEF0 markdown document and populate the relational database in Snowflake.
-- **Inputs**: `Formal IDEF0 Markdown Document` (from A2.2.2)
+- **Inputs**: `Formal IDEF0 Markdown Document` (from A2.2.2), `snowflake-rbac-policy-model.md`
 - **Controls**: `IDEF0 Data Model Schema`
 - **Outputs**: `Populated IDEF0 Database Records`
-- **Mechanisms**: `FHOA Synthesizer (Agent)`, `Python Parser`
+- **Mechanisms**: `fhoa-a223-ingest-ontologic-model (Agent)`, `Python Parser`
 
 ## A2.3: Refine Existing Process Model
 

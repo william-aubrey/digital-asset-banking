@@ -81,35 +81,28 @@ This diagram breaks down the A-0 box into its major sub-functions and shows the 
 ---
 ## A1: Manage Asset Lifecycle (Decomposition)
 
-This diagram details the primary steps a user takes when interacting with assets.
+This diagram details the primary steps a user takes when interacting with assets via the Streamlit application. This model is aligned with the implementation-level model `A1-manage-asset-lifecycle.md`.
 
-### A1.1: Authenticate User
-This function verifies a user's identity to grant them access to the platform.
-* **Inputs**: `User Credentials`
-* **Controls**: `Authentication Protocol (OAuth 2.0)`, `DIM_USERS Table Schema`
-* **Outputs**: `Authenticated User Session`, `User Record`
-* **Mechanisms**: `Streamlit Frontend`, `Backend API (Lambda)`, `External SSO Provider`, `Snowflake Database`
-
-### A1.2: Create Digital Asset
-This function covers the workflow for a user uploading a file and metadata.
-* **Inputs**: `User-Provided Digital Content`, `Asset Metadata`
-* **Controls**: `Authenticated User Session`, `S3 Bucket Policy`, `Data Model Schema`
-* **Outputs**: `Stored Asset`, `Asset Database Record`, `Transaction Database Record`, `Confirmation Message`
-* **Mechanisms**: `Streamlit Frontend`, `Backend API (Lambda)`, `AWS S3 Bucket`, `Snowflake Database`
-
-### A1.3: View Asset Data
-This function represents a user Browse the collection of available assets.
+### A1.1: Display Asset Marketplace
+- **Description**: Queries the data warehouse to present a view of available assets to the user.
 * **Inputs**: `User Request`
-* **Controls**: `Authenticated User Session`, `Data Model Schema`, `RBAC Policy`
-* **Outputs**: `Asset Data Display`
-* **Mechanisms**: `Streamlit Frontend`, `Backend API (Lambda)`, `Snowflake Database`
+* **Controls**: `Authenticated User Session`, `Data Model Schema`
+* **Outputs**: `Asset Marketplace View`
+* **Mechanisms**: `Streamlit Frontend`, `Backend API (Lambda)`, `Snowflake Connection`
 
-### A1.4: Purchase Digital Asset
-This function handles the transaction where a user takes ownership of an asset.
-* **Inputs**: `User Purchase Request` (Asset ID, Credits Spent)
-* **Controls**: `Authenticated User Session`, `Data Model Schema`, `RBAC Policy`
-* **Outputs**: `Updated Asset Record`, `Transaction Database Record`, `Confirmation Message`
-* **Mechanisms**: `Streamlit Frontend`, `Backend API (Lambda)`, `Snowflake Database`
+### A1.2: Process New Asset Upload
+- **Description**: Handles the validation, S3 upload, and database metadata registration for a new asset.
+* **Inputs**: `File Object`, `Asset Metadata`
+* **Controls**: `Authenticated User Session`, `Uploader ID`, `Asset Type`, `S3 Bucket Policy`
+* **Outputs**: `Uploaded Asset Confirmation`, `Asset Database Record`, `Transaction Database Record`
+* **Mechanisms**: `Streamlit Frontend`, `Backend API (Lambda)`, `S3 Client`, `Snowflake Connection`
+
+### A1.3: Execute Asset Purchase
+- **Description**: Updates asset ownership and records the transaction in the database.
+* **Inputs**: `Asset ID to Purchase`
+* **Controls**: `Authenticated User Session`, `Buyer ID`, `Data Model Schema`
+* **Outputs**: `Purchase Confirmation`, `Updated Asset Record`, `Transaction Database Record`
+* **Mechanisms**: `Streamlit Frontend`, `Backend API (Lambda)`, `Snowflake Connection`
 
 ---
 ## A2: Administer Platform Resources (Decomposition)
@@ -136,6 +129,13 @@ This function describes implementing and maintaining security policies.
 * **Controls**: `Principle of Least Privilege`, `Regulatory & Compliance Standards`
 * **Outputs**: `Applied Snowflake Roles & Grants`, `Applied IAM Policies & Roles`
 * **Mechanisms**: `Platform Administrator`, `Snowflake UI/CLI`, `AWS Console/CLI`, `IaC Engine`
+
+#### A2.3.1: Authenticate User
+This function verifies a user's identity to grant them access to the platform.
+* **Inputs**: `User Credentials`
+* **Controls**: `Authentication Protocol (OAuth 2.0)`, `DIM_USERS Table Schema`
+* **Outputs**: `Authenticated User Session`, `User Record`
+* **Mechanisms**: `Streamlit Frontend`, `Backend API (Lambda)`, `External SSO Provider`, `Snowflake Database`
 
 ### A2.4: Monitor Platform Health & Cost
 This function describes observing performance and cloud spending.
