@@ -18,6 +18,10 @@ This document provides the IDEF0-style decomposition for the **A2: Manage Ontolo
   - A2.3.3: Validate and Reconcile Model
   - A2.3.4: Publish and Version Model
 - A2.4: Present Model for Analysis
+  - A2.4.1: Establish Secure Session
+  - A2.4.2: Fetch IDEF0 Model Data
+  - A2.4.3: Construct Graph Representation
+  - A2.4.4: Render Model Visualization
  
 ---
 
@@ -116,8 +120,10 @@ Describes the "one to N" iterative improvement of an existing, published model b
 
 - **Purpose**: To query the populated IDEF0 database and render the process hierarchy and its connections in a user-friendly web interface for analysis.
 - **Inputs**: `User Request`
-- **Controls**: (None)
+- **Controls**: `Snowflake Connection Secrets`, `RBAC Policy Model`
 - **Outputs**: `Visual Model Representation`
-- **Mechanisms**: `Streamlit`, `Snowflake Connection`, `Graph Visualization Library`
+- **Mechanisms**: `fhoa-a24-present-model-for-analysis (Agent)`, `Streamlit`, `Snowflake Connection`, `Graph Visualization Library`
+
+> This function is decomposed further in the A2.4: Present Model for Analysis document.
 
 ---
