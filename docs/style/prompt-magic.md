@@ -30,6 +30,29 @@ Copy the contents from your output into this file and save the file.
 
 
 ## A. TERMINAL PROMPTS
+
+### Create a virtual environment for an app
+
+# Navigate to your project folder
+cd "g:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\A3_FHOA_Heuristics\agents\fhoa\fhoa-a24-present-model-for-analysis"
+
+# Create a virtual environment named .venv
+# You only need to do this once per project.
+python -m venv .venv
+
+# Activate the virtual environment
+# On Windows:
+.venv\Scripts\activate
+# On macOS/Linux:
+# source .venv/bin/
+
+# Install requirements.txt
+pip install -r requirements.txt
+
+
+
+
+---
 .venv\scripts\activate
 
 streamlit run main.py

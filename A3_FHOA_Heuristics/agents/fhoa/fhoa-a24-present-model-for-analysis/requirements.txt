@@ -1,0 +1,5 @@
+streamlit
+pandas
+snowflake-connector-python
+# graphviz is commented out in your script, but if you uncomment it, you'll need this package.
+# graphviz
