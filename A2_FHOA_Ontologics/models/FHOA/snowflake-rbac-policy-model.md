@@ -63,6 +63,11 @@ The following example SQL demonstrates this setup using the principle of least p
 -- Step 1: Use a role with user and role management privileges (e.g., SECURITYADMIN).
 USE ROLE SECURITYADMIN;
 
+-- Create the functional roles if they don't exist.
+CREATE ROLE IF NOT EXISTS ONTOLOGY_ADMIN_ROLE COMMENT = 'Owns the database and schema; manages top-level grants.';
+CREATE ROLE IF NOT EXISTS ONTOLOGY_MODELER_ROLE COMMENT = 'Has full CRUD privileges on all tables in the IDEF0_SCHEMA.';
+CREATE ROLE IF NOT EXISTS ONTOLOGY_READER_ROLE COMMENT = 'Has read-only (SELECT) privileges on all tables.';
+
 -- Create the dedicated service user (use key-pair auth in production).
 CREATE USER IF NOT EXISTS SVC_ONTOLOGICS_USER
   PASSWORD = '[PASSWORD_VALUE]' -- Replace with a secure method or key-pair auth
@@ -92,19 +97,18 @@ GRANT ROLE ONTOLOGY_MODELER_ROLE TO ROLE SYSADMIN;
 GRANT ROLE ONTOLOGY_READER_ROLE TO ROLE SYSADMIN;
 
 
-### 3.2. Object Grants (Applied by Agent)
+--### 3.2. Object Grants (Applied by Agent)
 
-The `fhoa-a21-provision-ontologic-infrastructure` agent applies the following grants to the functional roles after the database objects are created. This ensures a clean separation of concerns where `SYSADMIN` owns the objects and functional roles are granted the minimum necessary privileges.
+--The `fhoa-a21-provision-ontologic-infrastructure` agent applies the following grants to the functional roles after the database objects are created. This ensures a clean separation of concerns where `SYSADMIN` owns the objects and functional roles are granted the minimum necessary privileges.
 
-#### **ONTOLOGY_ADMIN_ROLE Grants:**
-```sql
+--#### **ONTOLOGY_ADMIN_ROLE Grants:**
+
 -- Grant full ownership of the database to the admin role.
 -- This is a powerful role intended for schema evolution and management.
 GRANT OWNERSHIP ON DATABASE ONTOLOGICS TO ROLE ONTOLOGY_ADMIN_ROLE;
-```
 
-#### **ONTOLOGY_MODELER_ROLE Grants:**
-```sql
+--#### **ONTOLOGY_MODELER_ROLE Grants:**
+
 -- Allow usage of the database, schema, and warehouse
 GRANT USAGE ON DATABASE ONTOLOGICS TO ROLE ONTOLOGY_MODELER_ROLE;
 GRANT USAGE ON SCHEMA ONTOLOGICS.IDEF0 TO ROLE ONTOLOGY_MODELER_ROLE;
@@ -113,10 +117,9 @@ GRANT USAGE ON WAREHOUSE ONTOLOGICS_WH TO ROLE ONTOLOGY_MODELER_ROLE;
 -- Allow full CRUD on all current and future tables in the schema
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA ONTOLOGICS.IDEF0 TO ROLE ONTOLOGY_MODELER_ROLE;
 GRANT SELECT, INSERT, UPDATE, DELETE ON FUTURE TABLES IN SCHEMA ONTOLOGICS.IDEF0 TO ROLE ONTOLOGY_MODELER_ROLE;
-```
 
-#### **ONTOLOGY_READER_ROLE Grants:**
-```sql
+--#### **ONTOLOGY_READER_ROLE Grants:**
+
 -- Allow usage of the database, schema, and warehouse
 GRANT USAGE ON DATABASE ONTOLOGICS TO ROLE ONTOLOGY_READER_ROLE;
 GRANT USAGE ON SCHEMA ONTOLOGICS.IDEF0 TO ROLE ONTOLOGY_READER_ROLE;
@@ -126,3 +129,4 @@ GRANT USAGE ON WAREHOUSE ONTOLOGICS_WH TO ROLE ONTOLOGY_READER_ROLE;
 GRANT SELECT ON ALL TABLES IN SCHEMA ONTOLOGICS.IDEF0 TO ROLE ONTOLOGY_READER_ROLE;
 GRANT SELECT ON FUTURE TABLES IN SCHEMA ONTOLOGICS.IDEF0 TO ROLE ONTOLOGY_READER_ROLE;
 
+```

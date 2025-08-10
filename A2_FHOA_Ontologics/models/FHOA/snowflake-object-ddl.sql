@@ -1,5 +1,5 @@
 -- use sysadmin to create the database and schema
-USE SYSADMIN;
+USE ROLE SYSADMIN;
 
 -- Create Database and Schema for the FHOA Ontology
 -- Create Database and Schema for the Ontologics Framework
