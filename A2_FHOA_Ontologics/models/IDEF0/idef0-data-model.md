@@ -23,7 +23,7 @@ These concepts are derived directly from the FIPS 183 standard and form the theo
 
 Our central insight is that a complete IDEF0 model, including all its rules and visual notations, can be stored as structured data. This allows for powerful machine-driven analysis and programmatic diagram generation. This is the schema we will build.
 
-### **The FHOA Ontology Schema (Version 1.2)**
+### **The Ontologics IDEF0 Schema (Version 1.2)**
 
 #### **`MODELS` Table**
 * `MODEL_ID` (PK), `MODEL_NAME`

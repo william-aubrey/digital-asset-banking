@@ -1,0 +1,12 @@
+# FHOA Application Agent Manifest for: fhoa-a21-provision-ontologic-infrastructure
+# This file is the machine-readable activation protocol for this Agent.
+# It provides metadata for discovery, deployment, and operation.
+
+name: "fhoa-a21-provision-ontologic-infrastructure"
+version: "0.1.0"
+description: "An agent to provision the FHOA Ontologics database schema and RBAC policies in Snowflake."
+
+activation:
+  local_development:
+    command: "python fhoa-a21-provision-ontologic-infrastructure.py"
+    description: "Runs the Snowflake provisioning script using environment variables for credentials."

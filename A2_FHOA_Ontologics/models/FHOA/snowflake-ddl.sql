@@ -30,7 +30,7 @@ CREATE OR REPLACE TABLE FUNCTIONS (
 -- Table for ENTITIES (the conceptual "things" or arrows)
 CREATE OR REPLACE TABLE ENTITIES (
     ENTITY_ID NUMBER(38,0) PRIMARY KEY, -- Note: ID is managed by the application layer.
-
+    EDGE VARCHAR(255),
     ENTITY_NAME VARCHAR(255) NOT NULL,
     DESCRIPTION VARCHAR(1000)
 );
