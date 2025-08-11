@@ -88,10 +88,13 @@ def a243_construct_graph_representation(boxes_df, arrows_df, model_id):
             'tailport': 'e' # Outputs always come from the east (right) side of a box
         }
         # Set arrow destination based on its role (Input, Control)
+        # And add color for better visual distinction
         if row['ROLE'] == 'INPUT':
             attrs['headport'] = 'w' # Inputs connect to the west (left) side
+            attrs['color'] = 'blue'
         elif row['ROLE'] == 'CONTROL':
             attrs['headport'] = 'n' # Controls connect to the north (top) side
+            attrs['color'] = 'red'
 
         dot.edge(source_id, dest_id, **attrs)
 
@@ -104,10 +107,13 @@ def a243_construct_graph_representation(boxes_df, arrows_df, model_id):
         dot.node(source_name, label="", shape="point", width="0")
 
         attrs = {'label': row['ENTITY_NAME']}
+        # Also color external arrows
         if row['ROLE'] == 'INPUT':
             attrs['headport'] = 'w'
+            attrs['color'] = 'blue'
         elif row['ROLE'] == 'CONTROL':
             attrs['headport'] = 'n'
+            attrs['color'] = 'red'
 
         dot.edge(source_name, dest_id, **attrs)
 

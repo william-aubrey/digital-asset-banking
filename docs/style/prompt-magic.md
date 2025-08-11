@@ -1,84 +1,16 @@
-# Word Magic
+# Prompt Engineering Playbook
 
 This document contains a collection of "magic prompts" designed to elicit specific, structured, and near-deterministic responses from Gemini Code Assist. Each recipe is designed to solve a common task.
 
 ---
 
-## 1. Markdown conversation
-
-Please provide the complete raw markdown source of our conversation. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
-
-
-
-## 2. Markdown upcoming response
-
-Please provide your response in the form of the complete raw markdown source of my prompt and your response. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
-
-Create a new file located at this file path G:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\docs\sessions.  The file naming convention is YYYY-MM-DD-HHMM-gemini-chat.md. The date is [YYYY-MM-DD-HHMM].
-
-Copy the contents from your output into this file and save the file.
-
-
-## 3. Markdown last response
-
-Please provide the complete raw markdown source of my last prompt and your last response. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
-
-Create a new file located at this file path G:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\docs\sessions.  The file naming convention is YYYY-MM-DD-HHMM-gemini-chat.md. The date is [YYYY-MM-DD-HHMM].
-
-Copy the contents from your output into this file and save the file.
-
-
-
-## A. TERMINAL PROMPTS
-
-### Create a virtual environment for an app
-
-# Navigate to your project folder
-cd "g:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\A3_FHOA_Heuristics\agents\fhoa\fhoa-a24-present-model-for-analysis"
-
-# Create a virtual environment named .venv
-# You only need to do this once per project.
-python -m venv .venv
-
-# Activate the virtual environment
-# On Windows:
-.venv\Scripts\activate
-# On macOS/Linux:
-# source .venv/bin/
-
-# Install requirements.txt
-pip install -r requirements.txt
-
-
-
-
----
-.venv\scripts\activate
-
-streamlit run main.py
-
-
+## Gemini Code Assist Prompts
 
 ---
 
-## APPENDICES
+### 1. Knowledge Capture
 
----
-Appendix 1
-Author: Gemini Code Assist
-Date: 2025-08-08-1833
-
----
-
-# My Prompt Engineering Playbook
-
-This document contains a collection of "magic prompts" designed to elicit specific, structured, and near-deterministic responses from Gemini Code Assist. Each recipe is designed to solve a common task.
-
----
-
-## 1. Knowledge Capture & Formatting
-
-### 1.1. Get Raw Markdown Source of a Conversation
+#### 1.1. Get Raw Markdown of a Conversation
 
 *   **Goal:** To get the complete, raw, un-rendered markdown source of our conversation, suitable for logging.
 *   **Challenge:** The chat UI often tries to render nested code blocks, breaking the output into multiple sections.
@@ -86,13 +18,32 @@ This document contains a collection of "magic prompts" designed to elicit specif
     ```
     Please provide the complete raw markdown source of our conversation. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
     ```
-*   **Expected Output:** A single, pre-formatted code block containing the entire markdown source, which can be copied with a single click.
+
+#### 1.2. Save a Chat Exchange to a File
+
+*   **Goal:** To save a specific part of the conversation to a timestamped markdown file.
+*   **The "Magic" Prompt (for the last response):**
+    ```
+    Please provide the complete raw markdown source of my last prompt and your last response. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
+
+    Create a new file located at this file path G:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\docs\sessions. The file naming convention is YYYY-MM-DD-HHMM-gemini-chat.md. The date is [YYYY-MM-DD-HHMM].
+
+    Copy the contents from your output into this file and save the file.
+    ```
+*   **The "Magic" Prompt (for the upcoming response):**
+    ```
+    Please provide your response in the form of the complete raw markdown source of my prompt and your response. Format the entire output as a single indented code block by prefixing every line with four spaces. This should prevent the chat window from rendering any markdown within it.
+
+    Create a new file located at this file path G:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\docs\sessions. The file naming convention is YYYY-MM-DD-HHMM-gemini-chat.md. The date is [YYYY-MM-DD-HHMM].
+
+    Copy the contents from your output into this file and save the file.
+    ```
 
 ---
 
-## 2. Workflow Automation
+### 2. Workflow Automation
 
-### 2.1. Create a VS Code Task
+#### 2.1. Create a VS Code Task
 
 *   **Goal:** To generate a complete, cross-platform `tasks.json` file for a specific workflow.
 *   **Context to Provide:**
@@ -111,13 +62,12 @@ This document contains a collection of "magic prompts" designed to elicit specif
     4. Open the resulting file in VS Code.
     5. Include comments explaining what each part of the command does.
     ```
-*   **Expected Output:** A single JSON code block containing a valid `tasks.json` structure.
 
 ---
 
-## 3. Code Evaluation & Troubleshooting
+### 3. Troubleshooting
 
-### 3.1. Analyze a Shell Error
+#### 3.1. Analyze a Shell Error
 
 *   **Goal:** To understand a command-line error and get a specific solution.
 *   **Context to Provide:** The full, unedited error message from the terminal.
@@ -135,13 +85,12 @@ This document contains a collection of "magic prompts" designed to elicit specif
     2.  **The Root Cause:** A clear, concise explanation of the primary problem.
     3.  **The Solution:** The exact, corrected command or code block to fix the issue.
     ```
-*   **Expected Output:** A markdown response with three specific H3 headings: "Analysis of the Errors", "The Root Cause", and "The Solution", each with detailed explanations.
 
 ---
 
-## 4. Code Generation & Refactoring
+### 4. Code Generation & Refactoring
 
-### 4.1. Generate Code with Design Constraints
+#### 4.1. Generate Code with Design Constraints
 
 *   **Goal:** To generate or refactor code that must adhere to specific, non-obvious design principles (like IDEF0).
 *   **Challenge:** The AI needs to be explicitly reminded of the design constraints during each request to ensure compliance.
@@ -160,5 +109,27 @@ This document contains a collection of "magic prompts" designed to elicit specif
     {{Your specific request, e.g., "Please refactor the following function..."}}
     </REQUEST>
     ```
-*   **Expected Output:** Code that not only fulfills the request but is also explicitly designed and evaluated against the stated principles.
-*   **Expected Output:** A markdown response with three specific H3 headings: "Analysis of the Errors", "The Root Cause", and "The Solution", each with detailed explanations.
+
+---
+
+## Terminal Command Recipes
+
+---
+
+### 1. Create and Activate a Python Virtual Environment
+
+This sequence of commands sets up and activates a new Python virtual environment and installs dependencies.
+
+```bash
+# Navigate to your project folder
+cd "g:\My Drive\A0 WRA\Digital Assets\Banking\digital-asset-banking\A3_FHOA_Heuristics\agents\fhoa\fhoa-a24-present-model-for-analysis"
+
+# Create a virtual environment named .venv (only needs to be done once)
+python -m venv .venv
+
+# Activate the virtual environment (Windows)
+.venv\Scripts\activate
+
+# Install dependencies from a requirements file
+pip install -r requirements.txt
+```
