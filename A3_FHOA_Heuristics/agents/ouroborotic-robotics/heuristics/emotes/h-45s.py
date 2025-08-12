@@ -1,0 +1,1 @@
+import wave,struct;r=22050;d=45;data=bytearray(((t>>6|t|t>>(t>>16))*10+((t>>11)&7))&255 for t in range(r*d));f=wave.open('h_revised.wav','wb');f.setparams((1,1,r,0,'NONE',''));f.writeframes(data)

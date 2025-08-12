@@ -1,0 +1,1 @@
+import wave as W,struct as S;r=8000;d=15;o=W.open('h_original_fixed.wav','wb');o.setnchannels(1);o.setsampwidth(1);o.setframerate(r);o.writeframes(bytearray(((t*5&t>>7)|(t*3&t>>10))&255 for t in range(r*d)))
