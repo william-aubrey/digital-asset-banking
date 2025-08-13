@@ -1,6 +1,7 @@
 # FHOA Application Agent Manifest for: fhoa-a24-present-model-for-analysis
 # This file is the machine-readable activation protocol for this Agent.
 
+# manifest.yaml
 name: "fhoa-a24-present-model-for-analysis"
 version: "0.1.0"
 description: "A Streamlit application to present and analyze IDEF0 models from the Ontologics database."
@@ -8,6 +9,6 @@ description: "A Streamlit application to present and analyze IDEF0 models from t
 activation:
   local_development:
     type: "streamlit"
-    entrypoint: "fhoa-a24-present-model-for-analysis.py"
-    command: "streamlit run fhoa-a24-present-model-for-analysis.py"
+    entrypoint: "fhoa-a24.py"
+    command: "streamlit run fhoa-a24.py"
     description: "Runs the Streamlit application on a local development server."
