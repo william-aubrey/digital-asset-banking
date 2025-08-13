@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDEF0 Standard Diagram Form</title>
+    <style>
+        /* --- General Setup --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 10px; /* Base font size for form elements */
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        /* --- The Main Form Container --- */
+        .standard-diagram-form {
+            width: 900px;
+            max-width: 100%;
+            height: 650px; /* Approximate A4/Letter aspect ratio */
+            background-color: #ffffff;
+            border: 1px solid #333;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            color: #1a1a1a;
+        }
+
+        /* --- Base Field Styling --- */
+        .field {
+            border: 1px solid #bfbfbf;
+            padding: 4px 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .field-label {
+            font-weight: bold;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            color: #595959;
+            margin-bottom: 4px;
+        }
+        .field-content {
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+
+        /* --- Section 1: Working Information (Top) --- */
+        .working-information {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            height: auto;
+            min-height: 60px;
+        }
+        .working-information .field {
+            border-top: none;
+            border-bottom-width: 2px;
+            border-bottom-color: #333;
+        }
+        .wi-left {
+            flex-grow: 1;
+            display: flex;
+            min-width: 300px; /* Prevent excessive squishing */
+        }
+        .wi-right {
+            display: flex;
+        }
+        .author-date-project { flex-basis: 40%; border-left: none; }
+        .reader-notes { flex-basis: 35%; }
+        .status { flex-basis: 25%; min-width: 120px; }
+        .reader-date { flex-basis: 150px; border-right: none; }
+
+        .status-options { display: flex; justify-content: space-around; font-size: 1.1em; flex-wrap: wrap;}
+        .status-options span { padding: 2px 4px; border: 1px solid #bfbfbf; border-radius: 3px; margin: 1px;}
+        .status-options .active { background-color: #d9d9d9; }
+
+        .reader-notes-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; }
+        .reader-notes-grid span { border: 1px solid #bfbfbf; text-align: center; font-size: 0.9em; padding: 1px;}
+        
+        /* --- Section 2: Message Field (Center) --- */
+        .canvas {
+            flex-grow: 1;
+            margin: 10px; /* Give some space from the outer frame */
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            background-color: lightblue; /* Highlight added as requested */
+            border: 1px dashed #FFFFFF; /* Border added as requested */
+            color: #333; /* Adjusted text color for readability */
+            text-align: center;
+            position: relative; /* For diagram content */
+        }
+
+        /* --- IDEF0 Function Styling --- */
+        .function {
+            width: 20%;
+            height: 20%;
+            border: 2px solid #262626;
+            background-color: #fff;
+            position: relative; /* For positioning name and number inside */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            margin: 10px;
+            box-sizing: border-box; /* Ensures padding doesn't affect final size */
+        }
+
+        .function-name {
+            font-weight: bold;
+            font-size: 0.8em; /* Adjusted for smaller function size */
+        }
+
+        .function-number {
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
+            font-size: 0.7em; /* Adjusted for smaller function size */
+        }
+
+
+        /* --- Section 3: Identification Fields (Bottom) --- */
+        .identification-fields {
+            display: flex;
+            flex-wrap: wrap;
+            height: auto;
+            min-height: 80px;
+        }
+        .identification-fields .field {
+            border-bottom: none;
+            border-top-width: 2px;
+            border-top-color: #333;
+        }
+        .used-at { flex-basis: 15%; border-left: none; min-width: 80px;}
+        .context { flex-basis: 25%; min-width: 150px;}
+        .node { flex-basis: 30%; min-width: 150px;}
+        .title { flex-basis: 30%; min-width: 150px;}
+        .number { border-right: none; display: flex; padding: 0; flex-grow: 1;}
+        
+        .c-number { flex-grow: 1; padding: 4px 8px; border-right: 1px solid #bfbfbf;}
+        .page-number { flex-basis: 30%; padding: 4px 8px; }
+
+        .context-grid {
+            border: 1px solid #595959;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            padding: 2px;
+            height: 40px;
+        }
+        .context-box { border: 1px solid #8c8c8c; }
+        .context-box.highlighted { background-color: #d9d9d9; border-color: #333; }
+
+    </style>
+</head>
+<body>
+
+    <div class="standard-diagram-form">
+
+        <!-- WORKING INFORMATION (Top Section) -->
+        <header class="working-information">
+            <div class="wi-left">
+                <div class="field author-date-project">
+                    <div class="field-label">Author / Date / Project</div>
+                    <div class="field-content">W. Aubrey / 2025-08-12 / Ouroborotic</div>
+                </div>
+                <div class="field reader-notes">
+                    <div class="field-label">Reader Notes</div>
+                    <div class="reader-notes-grid">
+                        <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                        <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+                    </div>
+                </div>
+            </div>
+            <div class="wi-right">
+                <div class="field status">
+                    <div class="field-label">Status</div>
+                    <div class="status-options">
+                        <span class="active">WORKING</span>
+                        <span>DRAFT</span>
+                        <span>REC.</span>
+                        <span>PUB.</span>
+                    </div>
+                </div>
+                <div class="field reader-date">
+                    <div class="field-label">Reader / Date</div>
+                    <div class="field-content"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MESSAGE FIELD (Center Section) -->
+        <main class="canvas">
+            <!-- The IDEF0 Function -->
+            <div class="function">
+                <div class="function-name">Function Name</div>
+                <div class="function-number">0</div>
+            </div>
+            <!-- The IDEF0 Function -->
+            <div class="function">
+                <div class="function-name">Function Name</div>
+                <div class="function-number">0</div>
+            </div>
+        </main>
+
+        <!-- IDENTIFICATION FIELDS (Bottom Section) -->
+        <footer class="identification-fields">
+            <div class="field used-at">
+                <div class="field-label">Used At:</div>
+                <div class="field-content"></div>
+            </div>
+            <div class="field context">
+                <div class="field-label">Context:</div>
+                <div class="context-grid">
+                    <div class="context-box"></div>
+                    <div class="context-box"></div>
+                    <div class="context-box"></div>
+                    <div class="context-box highlighted"></div>
+                    <div class="context-box"></div>
+                    <div class="context-box"></div>
+                </div>
+            </div>
+            <div class="field node">
+                <div class="field-label">Node:</div>
+                <div class="field-content">FHOA/A0</div>
+            </div>
+            <div class="field title">
+                <div class="field-label">Title:</div>
+                <div class="field-content">Evolve System</div>
+            </div>
+            <div class="field number">
+                <div class="c-number">
+                    <div class="field-label">Number</div>
+                    <div class="field-content">WA001</div>
+                </div>
+                <div class="page-number">
+                    <div class="field-label">Page</div>
+                    <div class="field-content">1</div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+</body>
+</html>

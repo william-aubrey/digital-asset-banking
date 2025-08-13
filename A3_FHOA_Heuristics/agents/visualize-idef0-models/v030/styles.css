@@ -1,0 +1,155 @@
+/* === IDEF0 Diagrammer Styles (v0.3.0) === */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #e9ecef;
+}
+.page {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+}
+header, footer {
+  background: #fff;
+  border-bottom: 1px solid #ccc;
+  padding: 8px 12px;
+}
+footer { border-top: 1px solid #ccc; border-bottom: none; }
+.canvas {
+  position: relative;
+  background: #f8fbff;
+  margin: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(28,28,28,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(28,28,28,0.06) 1px, transparent 1px);
+  background-size: 10px 10px, 10px 10px;
+}
+svg.connections {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* Nodes */
+.function {
+  position: absolute;
+  width: 220px;
+  height: 120px;
+  border: 2px solid #1f2937;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 24px 18px 24px;
+  box-sizing: border-box;
+  user-select: none;
+  cursor: move;
+}
+.function .function-name {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+}
+.function .function-number {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  font-size: 12px;
+  color: #111827;
+}
+/* Off-page connector node */
+.offpage {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  background: #ffffff;
+  border: 2px dashed #64748b;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #334155;
+  cursor: move;
+}
+.offpage .label { pointer-events: none; }
+.offpage .handle { cursor: crosshair; }
+/* Handles */
+.handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #1f2937;
+  background: #ffffff;
+  border-radius: 50%;
+  box-sizing: border-box;
+  z-index: 2;
+  cursor: crosshair;
+  display: grid;
+  place-items: center;
+}
+.icom { font-size: 9px; line-height: 1; color: #111827; pointer-events: none; }
+.handle-left   { left: -7px;  top: 50%; transform: translate(-50%, -50%); }
+.handle-right  { right: -7px; top: 50%; transform: translate(50%, -50%); }
+.handle-top    { top: -7px;   left: 50%; transform: translate(-50%, -50%); }
+.handle-bottom { bottom: -7px;left: 50%; transform: translate(-50%, 50%); }
+.handle[data-role="input"]     { box-shadow: 0 0 0 2px rgba(59,130,246,0.25); }
+.handle[data-role="control"]   { box-shadow: 0 0 0 2px rgba(16,185,129,0.25); }
+.handle[data-role="output"]    { box-shadow: 0 0 0 2px rgba(234,179,8,0.25);  }
+.handle[data-role="mechanism"] { box-shadow: 0 0 0 2px rgba(239,68,68,0.25);  }
+.handle.active { background: #111827; }
+.handle.active .icom { color: #fff; }
+/* Connectors */
+.connector {
+  stroke: #111827;
+  stroke-width: 2;
+  fill: none;
+  pointer-events: stroke;
+  marker-end: url(#arrow-generic);
+}
+.connector[data-kind="output"]    { marker-end: url(#arrow-output); }
+.connector[data-kind="control"]   { stroke-dasharray: 6 4; marker-end: url(#arrow-control); }
+.connector[data-kind="mechanism"] { stroke-dasharray: 2 4; marker-end: url(#arrow-mechanism); }
+.connector.selected { stroke: #2563eb; stroke-width: 3; }
+/* Connector labels */
+.edge-label {
+  position: absolute;
+  min-width: 40px;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.2;
+  pointer-events: auto;
+}
+.edge-label[contenteditable="true"]:focus { outline: 2px solid #2563eb; }
+/* Toolbar */
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+button {
+  padding: 6px 10px;
+  border: 1px solid #94a3b8;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover { background: #f1f5f9; }
+.hint {
+  color: #334155;
+  font-size: 12px;
+  margin-left: 8px;
+}

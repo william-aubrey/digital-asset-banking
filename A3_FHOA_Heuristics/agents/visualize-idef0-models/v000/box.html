@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDEF0 A-0 Diagram Render</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="idef0-container">
+        <div class="diagram-header">
+            NODE: FHOA_A-0_Context
+        </div>
+        <div class="diagram-meta">
+            <div class="meta-item"><strong>PURPOSE:</strong> To model a system for continuous improvement.</div>
+            <div class="meta-item"><strong>VIEWPOINT:</strong> The Agentic Enterprise Architect.</div>
+        </div>
+        
+        <div class="diagram-core">
+
+            <div class="arrow control-arrow">
+                <div class="arrow-container">
+                    <div class="arrow-line">
+                        <div class="arrow-head"></div>
+                    </div>
+                </div>
+                <div class="arrow-label">Guiding Principles (Kaizen Shoshin)</div>
+            </div>
+
+            <div class="arrow input-arrow">
+                 <div class="arrow-label">Raw Performance Data</div>
+                 <div class="arrow-container">
+                    <div class="arrow-line">
+                        <div class="arrow-head"></div>
+                    </div>
+                 </div>
+            </div>
+
+            <div class="idef0-box" onclick="showDecomposeMessage()">
+                <div class="box-name">Evolve System</div>
+                <div class="box-number">0</div>
+            </div>
+
+            <div class="arrow output-arrow">
+                <div class="arrow-label">Refined System Model</div>
+                <div class="arrow-container">
+                    <div class="arrow-line">
+                       <div class="arrow-head"></div>
+                   </div>
+                </div>
+            </div>
+
+            <div class="arrow mechanism-arrow">
+                <div class="arrow-label">Human/AI Agents</div>
+                <div class="arrow-container">
+                    <div class="arrow-line">
+                        <div class="arrow-head"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // A simple JS function to hint at the "Decomposition" functionality
+        // that a full-fledged interactive library would provide.
+        function showDecomposeMessage() {
+            alert("
