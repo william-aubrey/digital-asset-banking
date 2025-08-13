@@ -1,0 +1,86 @@
+{
+  "models": [
+    {
+      "id": "demo1",
+      "name": "Demo: Two-Box",
+      "diagram": {
+        "settings": {
+          "router": "ortho",
+          "cornerRadius": 12,
+          "grid": 10
+        },
+        "nodes": [
+          {
+            "id": "id1",
+            "kind": "function",
+            "x": 200,
+            "y": 180,
+            "w": 220,
+            "h": 120,
+            "name": "Governance",
+            "number": "A1"
+          },
+          {
+            "id": "id2",
+            "kind": "function",
+            "x": 520,
+            "y": 180,
+            "w": 220,
+            "h": 120,
+            "name": "Production",
+            "number": "A2"
+          }
+        ],
+        "edges": [
+          {
+            "id": "e1",
+            "type": "normal",
+            "a": {
+              "nodeId": "id1",
+              "side": "right",
+              "role": "O"
+            },
+            "b": {
+              "nodeId": "id2",
+              "side": "left",
+              "role": "I"
+            },
+            "label": "Orders"
+          }
+        ],
+        "stubs": [
+          {
+            "id": "s1",
+            "type": "stub",
+            "role": "C",
+            "anchor": {
+              "nodeId": "id1",
+              "side": "top",
+              "role": "C"
+            },
+            "axis": "y",
+            "offset": 0,
+            "length": 80,
+            "dir": -1,
+            "label": "Govt Regulation"
+          },
+          {
+            "id": "s2",
+            "type": "stub",
+            "role": "M",
+            "anchor": {
+              "nodeId": "id2",
+              "side": "bottom",
+              "role": "M"
+            },
+            "axis": "y",
+            "offset": 0,
+            "length": 80,
+            "dir": 1,
+            "label": "People"
+          }
+        ]
+      }
+    }
+  ]
+}
