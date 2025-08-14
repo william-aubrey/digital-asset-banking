@@ -86,6 +86,50 @@ function setActiveHandle(h){
   if (el) el.classList.add('active');
 }
 
+// --- import/export helpers -----------------------------------------------
+function applyDiagram(diag) {
+  if (!diag) return;
+  // settings: merge, nodes/edges/stubs: replace
+  state.settings = { ...state.settings, ...(diag.settings || {}) };
+  state.nodes = Array.isArray(diag.nodes) ? diag.nodes : [];
+  state.edges = Array.isArray(diag.edges) ? diag.edges : [];
+  state.stubs = Array.isArray(diag.stubs) ? diag.stubs : [];
+  // Defer until render() exists
+  if (typeof render === "function") requestAnimationFrame(() => render());
+}
+
+// If called with a JSON string/object, use that; otherwise open a file picker.
+function importJSON(payload) {
+  try {
+    if (payload) {
+      const obj = typeof payload === "string" ? JSON.parse(payload) : payload;
+      applyDiagram(obj);
+      return;
+    }
+  } catch (e) {
+    console.error("Bad JSON passed to importJSON()", e);
+    alert("Invalid JSON: " + e.message);
+    return;
+  }
+
+  // No payload: prompt for a .json file
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json,application/ld+json";
+  input.onchange = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    try {
+      const text = await f.text();
+      importJSON(text); // recurse with the string payload
+    } catch (err) {
+      console.error("Failed to read file", err);
+      alert("Failed to read file: " + err.message);
+    }
+  };
+  input.click();
+}
+
 // ---------- Rendering ----------
 function clearSvg(){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
 function appendDefs(){
@@ -174,6 +218,21 @@ document.getElementById('btnSave').onclick = ()=> localStorage.setItem('idef0_v0
 document.getElementById('btnLoad').onclick = ()=>{ const v=localStorage.getItem('idef0_v033b'); if(v){ const d=JSON.parse(v); Object.assign(state.settings,d.settings||{}); state.nodes=d.nodes||[]; state.edges=d.edges||[]; state.stubs=d.stubs||[]; render(); setActiveHandle(null); } };
 document.getElementById('routerSelect').onchange = ()=> render();
 
+
+// Populate the label dropdown from state.entities (safe no-op if the element isn't present)
+function refreshEntityList() {
+  const ddl = document.getElementById('entityList');
+  if (!ddl) return;
+  ddl.innerHTML = '<option value=""></option>' + (state.entities || [])
+    .map(e => `<option>${e}</option>`).join('');
+}
+
+// Ensure models are loaded when the page is ready (Streamlit injects window.__MODELS__)
+window.addEventListener('load', () => {
+  try { loadModels(); } catch (e) { console.warn('loadModels failed', e); }
+});
+
+
 // ---------- Seed ----------
 (function init(){
   addFunction(200,180); addFunction(520,180);
@@ -187,30 +246,31 @@ document.getElementById('routerSelect').onchange = ()=> render();
 // replace the existing loadModels() with this
 async function loadModels() {
   const sel = document.getElementById('modelSelect');
-
-  // 1) Prefer models injected by Streamlit
+  // prefer Streamlit payload
   if (window.__MODELS__ && Array.isArray(window.__MODELS__.models)) {
     const data = window.__MODELS__;
     sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
     sel.onchange = ()=> {
       const found = data.models.find(x=>x.id===sel.value);
-      if (found && found.diagram) importJSON(JSON.stringify(found.diagram));
+      if (!found) return;
+      if (found.diagram) importJSON(JSON.stringify(found.diagram));
+      // hydrate entity pick-list from Snowflake when available
+      if (Array.isArray(found.entities) && found.entities.length) {
+        state.entities = found.entities;
+        refreshEntityList();
+      }
     };
     if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
     return;
   }
-
-  // 2) Fallback: local sample file
-  try {
-    const res = await fetch('sample_models.json');
-    const data = await res.json();
-    sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-    sel.onchange = ()=> {
-      const found = data.models.find(x=>x.id===sel.value);
-      if (found && found.diagram) importJSON(JSON.stringify(found.diagram));
-    };
-    if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
-  } catch(e) {
-    console.warn('No models available (window.__MODELS__ nor sample_models.json).', e);
-  }
+  // fallback to local sample
+  const res = await fetch('sample_models.json');
+  const data = await res.json();
+  sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  sel.onchange = ()=> {
+    const found = data.models.find(x=>x.id===sel.value);
+    if (found && found.diagram) importJSON(JSON.stringify(found.diagram));
+    if (found && Array.isArray(found.entities)) { state.entities = found.entities; refreshEntityList(); }
+  };
+  if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
 }
