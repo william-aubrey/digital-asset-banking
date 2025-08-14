@@ -253,7 +253,7 @@ html = INDEX.replace('<link rel="stylesheet" href="styles.css" />', f"<style>{CS
             .replace('<link rel="stylesheet" href="styles.css">',    f"<style>{CSS}</style>") \
             .replace('<script src="app.js"></script>',               injection + f"<script>{JS}</script>")
 
-st.components.v1.html(html, height=720, scrolling=False)
+st.components.v1.html(html, height=720, width=1920, scrolling=False)
 
 # ---------- Sidebar dev tools ----------
 with st.sidebar:

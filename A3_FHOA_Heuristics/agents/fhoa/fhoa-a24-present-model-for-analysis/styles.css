@@ -12,10 +12,11 @@ html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -ap
   --function-bg: #fff;
 }
 
-/* Full-height app frame inside the component: 10 / 80 / 10 */
-body {
-  height: 100svh;
-  height: 100dvh;
+/* Full-height app frame INSIDE the component: 10 / 80 / 10 */
+#app-root {
+  width: 100vw;
+  height: 100svh;   /* mobile safe */
+  height: 100dvh;   /* modern desktop */
   display: grid;
   grid-template-rows: 10% 80% 10%;
   overflow: hidden; /* no internal scroll */

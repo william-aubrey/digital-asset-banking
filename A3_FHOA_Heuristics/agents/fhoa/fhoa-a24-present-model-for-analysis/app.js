@@ -94,7 +94,6 @@ function applyDiagram(diag) {
   state.nodes = Array.isArray(diag.nodes) ? diag.nodes : [];
   state.edges = Array.isArray(diag.edges) ? diag.edges : [];
   state.stubs = Array.isArray(diag.stubs) ? diag.stubs : [];
-  // Defer until render() exists
   if (typeof render === "function") requestAnimationFrame(() => render());
 }
 
@@ -111,8 +110,6 @@ function importJSON(payload) {
     alert("Invalid JSON: " + e.message);
     return;
   }
-
-  // No payload: prompt for a .json file
   const input = document.createElement("input");
   input.type = "file";
   input.accept = "application/json,application/ld+json";
@@ -121,7 +118,7 @@ function importJSON(payload) {
     if (!f) return;
     try {
       const text = await f.text();
-      importJSON(text); // recurse with the string payload
+      importJSON(text);
     } catch (err) {
       console.error("Failed to read file", err);
       alert("Failed to read file: " + err.message);
@@ -180,7 +177,6 @@ function render(){
   state.edges.forEach(drawEdge);
   state.stubs.forEach(drawStub);
   state.nodes.forEach(drawNode);
-  // restore selection highlight, if any
   setActiveHandle(state.activeHandle);
 }
 
@@ -188,14 +184,8 @@ function render(){
 svg.addEventListener('click', ev=>{
   if (!isHandle(ev.target)) return;
   const clicked = { nodeId: ev.target.dataset.nodeId, side: ev.target.dataset.side, role: ev.target.dataset.role };
-
-  // nothing active → activate
   if (!state.activeHandle) { setActiveHandle(clicked); return; }
-
-  // same handle → deselect
   if (state.activeHandle.nodeId===clicked.nodeId && state.activeHandle.side===clicked.side) { setActiveHandle(null); return; }
-
-  // try to connect; if invalid, switch selection to the clicked handle
   const edge = makeEdge(state.activeHandle, clicked);
   if (edge) { render(); setActiveHandle(null); }
   else { setActiveHandle(clicked); }
@@ -218,8 +208,7 @@ document.getElementById('btnSave').onclick = ()=> localStorage.setItem('idef0_v0
 document.getElementById('btnLoad').onclick = ()=>{ const v=localStorage.getItem('idef0_v033b'); if(v){ const d=JSON.parse(v); Object.assign(state.settings,d.settings||{}); state.nodes=d.nodes||[]; state.edges=d.edges||[]; state.stubs=d.stubs||[]; render(); setActiveHandle(null); } };
 document.getElementById('routerSelect').onchange = ()=> render();
 
-
-// Populate the label dropdown from state.entities (safe no-op if the element isn't present)
+// Entity dropdown
 function refreshEntityList() {
   const ddl = document.getElementById('entityList');
   if (!ddl) return;
@@ -227,13 +216,12 @@ function refreshEntityList() {
     .map(e => `<option>${e}</option>`).join('');
 }
 
-// Ensure models are loaded when the page is ready (Streamlit injects window.__MODELS__)
+// Load models when ready
 window.addEventListener('load', () => {
   try { loadModels(); } catch (e) { console.warn('loadModels failed', e); }
 });
 
-
-// ---------- Seed ----------
+// Seed
 (function init(){
   addFunction(200,180); addFunction(520,180);
   const n1=state.nodes[0], n2=state.nodes[1];
@@ -243,10 +231,31 @@ window.addEventListener('load', () => {
   render();
 })();
 
-// replace the existing loadModels() with this
+// API-first model loader with Streamlit + sample fallbacks
 async function loadModels() {
   const sel = document.getElementById('modelSelect');
-  // prefer Streamlit payload
+
+  // 1) API first
+  try {
+    const res = await fetch('/api/models');
+    if (res.ok) {
+      const data = await res.json();
+      sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+      sel.onchange = async () => {
+        const id = sel.value;
+        const [diagRes, entRes] = await Promise.all([
+          fetch(`/api/models/${id}`),
+          fetch(`/api/models/${id}/entities`)
+        ]);
+        if (diagRes.ok) importJSON(await diagRes.text());
+        if (entRes.ok) { const ents = (await entRes.json()).entities || []; state.entities = ents; refreshEntityList(); }
+      };
+      if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
+      return;
+    }
+  } catch (_) {}
+
+  // 2) Streamlit payload
   if (window.__MODELS__ && Array.isArray(window.__MODELS__.models)) {
     const data = window.__MODELS__;
     sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
@@ -254,16 +263,13 @@ async function loadModels() {
       const found = data.models.find(x=>x.id===sel.value);
       if (!found) return;
       if (found.diagram) importJSON(JSON.stringify(found.diagram));
-      // hydrate entity pick-list from Snowflake when available
-      if (Array.isArray(found.entities) && found.entities.length) {
-        state.entities = found.entities;
-        refreshEntityList();
-      }
+      if (Array.isArray(found.entities)) { state.entities = found.entities; refreshEntityList(); }
     };
     if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
     return;
   }
-  // fallback to local sample
+
+  // 3) Fallback to local sample
   const res = await fetch('sample_models.json');
   const data = await res.json();
   sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
