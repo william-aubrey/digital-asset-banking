@@ -1,9 +1,9 @@
-/* IDEF0 Diagrammer — v0.3.3b (hotfix-3)
-   - Solid two-click workflow
-   - Selection resets after stub/edge
-   - Invalid connect switches selection to the clicked handle
-   - Esc clears selection
-   - Highlight persists across re-renders
+/* IDEF0 Diagrammer — v0.3.3c (API-free)
+   - Two-click handles
+   - Stubs
+   - Orthogonal routing w/ rounded corners
+   - LocalStorage save/load
+   - Model loader: Streamlit payload (window.__MODELS__) → sample_models.json
 */
 const GRID = 10;
 
@@ -39,7 +39,8 @@ function routeOrtho(p0,p1,side0,side1,r=12){
   const pA=lead(p0,side0), pB=lead(p1,side1), mid={x:(pA.x+pB.x)/2, y:(pA.y+pB.y)/2};
   const pts=[p0,pA,{x:mid.x,y:pA.y},{x:mid.x,y:pB.y},pB,p1].map(p=>({x:snap(p.x),y:snap(p.y)}));
   let d=`M ${pts[0].x} ${pts[0].y}`;
-  for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],c=pts[i+1];
+  for(let i=1;i<pts.length;i++){
+    const a=pts[i-1],b=pts[i],c=pts[i+1];
     if(c&&((a.x===b.x&&b.y!==c.y)||(a.y===b.y&&b.x!==c.x))){
       let p1={x:b.x,y:b.y},p2={x:b.x,y:b.y};
       if(a.x===b.x){p1.y=b.y-Math.sign(b.y-a.y)*r; p2.x=b.x+Math.sign(c.x-b.x)*r;}
@@ -77,9 +78,7 @@ function makeStub(handle){
 // ---------- Selection helpers ----------
 function setActiveHandle(h){
   state.activeHandle = h;
-  // wipe highlights
   document.querySelectorAll('.handle').forEach(el=>el.classList.remove('active'));
-  // restore if any
   if (!h) return;
   const sel = `.handle[data-node-id="${h.nodeId}"][data-side="${h.side}"]`;
   const el = svg.querySelector(sel);
@@ -89,7 +88,6 @@ function setActiveHandle(h){
 // --- import/export helpers -----------------------------------------------
 function applyDiagram(diag) {
   if (!diag) return;
-  // settings: merge, nodes/edges/stubs: replace
   state.settings = { ...state.settings, ...(diag.settings || {}) };
   state.nodes = Array.isArray(diag.nodes) ? diag.nodes : [];
   state.edges = Array.isArray(diag.edges) ? diag.edges : [];
@@ -216,12 +214,42 @@ function refreshEntityList() {
     .map(e => `<option>${e}</option>`).join('');
 }
 
+// ---------- Model loader (API-free) ----------
+async function loadModels() {
+  const sel = document.getElementById('modelSelect');
+
+  // 1) Streamlit-injected payload
+  if (window.__MODELS__ && Array.isArray(window.__MODELS__.models)) {
+    const data = window.__MODELS__;
+    sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+    sel.onchange = ()=> {
+      const found = data.models.find(x=>x.id===sel.value);
+      if (!found) return;
+      if (found.diagram) importJSON(found.diagram);
+      if (Array.isArray(found.entities)) { state.entities = found.entities; refreshEntityList(); }
+    };
+    if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
+    return;
+  }
+
+  // 2) Local sample
+  const res = await fetch('sample_models.json');
+  const data = await res.json();
+  sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  sel.onchange = ()=> {
+    const found = data.models.find(x=>x.id===sel.value);
+    if (found && found.diagram) importJSON(found.diagram);
+    if (found && Array.isArray(found.entities)) { state.entities = found.entities; refreshEntityList(); }
+  };
+  if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
+}
+
 // Load models when ready
 window.addEventListener('load', () => {
   try { loadModels(); } catch (e) { console.warn('loadModels failed', e); }
 });
 
-// Seed
+// Seed example (kept for quick sanity test)
 (function init(){
   addFunction(200,180); addFunction(520,180);
   const n1=state.nodes[0], n2=state.nodes[1];
@@ -230,53 +258,3 @@ window.addEventListener('load', () => {
   state.stubs.push({id:newid('s'), type:'stub', role:'M', anchor:{nodeId:n2.id, side:'bottom', role:'M'}, axis:'y', offset:0, length:80, dir:1,  label:'People'});
   render();
 })();
-
-// API-first model loader with Streamlit + sample fallbacks
-async function loadModels() {
-  const sel = document.getElementById('modelSelect');
-
-  // 1) API first
-  try {
-    const res = await fetch('/api/models');
-    if (res.ok) {
-      const data = await res.json();
-      sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-      sel.onchange = async () => {
-        const id = sel.value;
-        const [diagRes, entRes] = await Promise.all([
-          fetch(`/api/models/${id}`),
-          fetch(`/api/models/${id}/entities`)
-        ]);
-        if (diagRes.ok) importJSON(await diagRes.text());
-        if (entRes.ok) { const ents = (await entRes.json()).entities || []; state.entities = ents; refreshEntityList(); }
-      };
-      if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
-      return;
-    }
-  } catch (_) {}
-
-  // 2) Streamlit payload
-  if (window.__MODELS__ && Array.isArray(window.__MODELS__.models)) {
-    const data = window.__MODELS__;
-    sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-    sel.onchange = ()=> {
-      const found = data.models.find(x=>x.id===sel.value);
-      if (!found) return;
-      if (found.diagram) importJSON(JSON.stringify(found.diagram));
-      if (Array.isArray(found.entities)) { state.entities = found.entities; refreshEntityList(); }
-    };
-    if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
-    return;
-  }
-
-  // 3) Fallback to local sample
-  const res = await fetch('sample_models.json');
-  const data = await res.json();
-  sel.innerHTML = data.models.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-  sel.onchange = ()=> {
-    const found = data.models.find(x=>x.id===sel.value);
-    if (found && found.diagram) importJSON(JSON.stringify(found.diagram));
-    if (found && Array.isArray(found.entities)) { state.entities = found.entities; refreshEntityList(); }
-  };
-  if (data.models[0]) { sel.value = data.models[0].id; sel.onchange(); }
-}
