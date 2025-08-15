@@ -2,79 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>IDEF0 Diagrammer — v0.3.3b</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IDEF0 Diagrammer</title>
+
+  <!-- Served by Streamlit’s /static route (Python will fill these) -->
+  <link rel="stylesheet" href="\static\styles.css" />
 </head>
+
 <body>
   <div id="app-root">
-    <!-- Top metadata & controls -->
-    <header class="topbar">
-      <div class="left">
-        <div class="field">
-          <label>AUTHOR</label>
-          <input id="author" placeholder="Your name" />
-        </div>
-        <div class="field">
-          <label>DATE</label>
-          <input id="date" />
-        </div>
+  <!-- Top metadata & controls -->
+  <header class="topbar">
+    <div class="left">
+      <div class="field">
+        <label>Author</label>
+        <input id="author" placeholder="Your name" />
       </div>
-      <div class="right">
-        <div class="field">
-          <label>MODEL</label>
-          <select id="modelSelect"></select>
-        </div>
-        <div class="field">
-          <label>ROUTER</label>
-          <select id="routerSelect">
-            <option value="ortho">Orthogonal</option>
-            <option value="curvy">Curvy (non-FIPS)</option>
-          </select>
-        </div>
-        <div class="buttons">
-          <button id="btnAddBox">+ Function</button>
-          <button id="btnOffPage">+ Off-page</button>
-          <button id="btnExportJson">Export JSON</button>
-          <button id="btnExportSvg">Export SVG</button>
-          <button id="btnSave">Save</button>
-          <button id="btnLoad">Load</button>
-          <button id="btnClear">Clear</button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Canvas -->
-    <main class="canvas-wrap">
-      <div class="grid"></div>
-      <svg id="svg" class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
-    </main>
-
-    <!-- Bottom identification fields -->
-    <footer class="bottombar">
-      <div class="field"><label>USED AT</label><input id="usedAt"/></div>
-      <div class="field node"><label>NODE</label><input id="node" placeholder="A0 / A1 / A12 ..."/></div>
-      <div class="field title"><label>TITLE</label><input id="title" placeholder="Diagram title"/></div>
-      <div class="field number">
-        <div class="sub">
-          <label>C-NUMBER</label><input id="cnum" />
-        </div>
-        <div class="sub">
-          <label>PAGE</label><input id="page" />
-        </div>
-      </div>
-    </footer>
-
-    <!-- Floating mini palette for labels -->
-    <div class="label-editor" id="labelEditor">
-      <input id="labelInput" />
-      <div class="label-row">
-        <select id="entityList"></select>
-        <button id="btnLabelApply">Apply</button>
+      <div class="field">
+        <label>Date</label>
+        <input id="date" />
       </div>
     </div>
-  </div>
 
-  <script src="app.js"></script>
+    <div class="right">
+      <div class="field">
+        <label>Model</label>
+        <select id="modelSelect"></select>
+      </div>
+      <div class="field">
+        <label>Context</label>
+        <select id="contextSelect"></select>
+      </div>
+      <div class="field">
+        <label>Router</label>
+        <select id="routerSelect">
+          <option value="ortho">Orthogonal</option>
+          <option value="curvy">Curvy (non-FIPS)</option>
+        </select>
+      </div>
+
+      <div class="buttons">
+        <button id="btnAddBox">+ Function</button>
+        <button id="btnOffPage">+ Off-page</button>
+        <button id="btnExportJson">Export JSON</button>
+        <button id="btnExportSvg">Export SVG</button>
+        <button id="btnSave">Save</button>
+        <button id="btnLoad">Load</button>
+        <button id="btnClear">Clear</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Canvas -->
+  <main class="canvas-wrap">
+    <div class="grid"></div>
+    <svg id="svg" class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+  </main>
+
+  <!-- Bottom identification fields -->
+  <footer class="bottombar">
+    <div class="field"><label>Used At</label><input id="usedAt"/></div>
+    <div class="field node"><label>Node</label><input id="node" placeholder="A0 / A1 / A12 ..."/></div>
+    <div class="field title"><label>Title</label><input id="title" placeholder="Diagram title"/></div>
+    <div class="field number">
+      <div class="sub">
+        <label>C-Number</label><input id="cnum" />
+      </div>
+      <div class="sub">
+        <label>Page</label><input id="page" />
+      </div>
+    </div>
+  </footer>
+
+  <!-- Streamlit injects the payload here -->
+  <script>window.MODELS = /*__MODELS__*/;</script>
+
+  <!-- Your app JS (served by Streamlit’s /static) -->
+  <script src="\static\app.js"></script>
+</div>
 </body>
 </html>

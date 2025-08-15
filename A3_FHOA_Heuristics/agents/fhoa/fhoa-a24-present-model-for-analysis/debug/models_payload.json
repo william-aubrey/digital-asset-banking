@@ -1,0 +1,1557 @@
+{
+  "models": [
+    {
+      "id": "1",
+      "name": "Manage Digital Asset Banking Platform",
+      "contexts": [
+        {
+          "id": "A-0",
+          "label": "A-0",
+          "diagram": {
+            "settings": {
+              "router": "ortho",
+              "cornerRadius": 12,
+              "grid": 10
+            },
+            "nodes": [
+              {
+                "id": "n100",
+                "kind": "function",
+                "x": 160,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Manage Digital Asset Banking Platform",
+                "number": "A-0"
+              }
+            ],
+            "edges": [],
+            "stubs": [
+              {
+                "id": "s1",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "User-Provided Digital Content"
+              },
+              {
+                "id": "s2",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "User Stories & Requirements"
+              },
+              {
+                "id": "s3",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Regulatory & Compliance Standards"
+              },
+              {
+                "id": "s4",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Architectural Specifications"
+              },
+              {
+                "id": "s5",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Managed Digital Assets"
+              },
+              {
+                "id": "s6",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Physical Trading Cards"
+              },
+              {
+                "id": "s7",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Transaction Records & Audit Logs"
+              },
+              {
+                "id": "s8",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Platform Analytics & Dashboards"
+              },
+              {
+                "id": "s9",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "End Users & Platform Administrators"
+              },
+              {
+                "id": "s10",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Cloud Infrastructure"
+              },
+              {
+                "id": "s11",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n100",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "CI/CD Pipeline"
+              }
+            ]
+          }
+        },
+        {
+          "id": "A0",
+          "label": "A0",
+          "diagram": {
+            "settings": {
+              "router": "ortho",
+              "cornerRadius": 12,
+              "grid": 10
+            },
+            "nodes": [
+              {
+                "id": "n110",
+                "kind": "function",
+                "x": 160,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Manage Asset Lifecycle",
+                "number": "A1"
+              },
+              {
+                "id": "n120",
+                "kind": "function",
+                "x": 500,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Administer Platform Resources",
+                "number": "A2"
+              },
+              {
+                "id": "n130",
+                "kind": "function",
+                "x": 160,
+                "y": 380,
+                "w": 220,
+                "h": 120,
+                "name": "Provide Analytics & Compliance",
+                "number": "A3"
+              }
+            ],
+            "edges": [
+              {
+                "id": "e1",
+                "type": "normal",
+                "a": {
+                  "nodeId": "n110",
+                  "side": "right",
+                  "role": "O"
+                },
+                "b": {
+                  "nodeId": "n130",
+                  "side": "left",
+                  "role": "I"
+                },
+                "label": "Transaction Records"
+              },
+              {
+                "id": "e2",
+                "type": "normal",
+                "a": {
+                  "nodeId": "n120",
+                  "side": "right",
+                  "role": "O"
+                },
+                "b": {
+                  "nodeId": "n110",
+                  "side": "left",
+                  "role": "I"
+                },
+                "label": "Provisioned Cloud Resources"
+              }
+            ],
+            "stubs": [
+              {
+                "id": "s1",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n110",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "User-Provided Digital Content"
+              },
+              {
+                "id": "s2",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n110",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Architectural Specifications"
+              },
+              {
+                "id": "s3",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n110",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Managed Digital Assets"
+              },
+              {
+                "id": "s4",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n110",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "End Users"
+              },
+              {
+                "id": "s5",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n120",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "User Stories & Requirements"
+              },
+              {
+                "id": "s6",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n120",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Regulatory & Compliance Standards"
+              },
+              {
+                "id": "s7",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n120",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Cloud Infrastructure"
+              },
+              {
+                "id": "s8",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n120",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "CI/CD Pipeline"
+              },
+              {
+                "id": "s9",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n120",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Deployed Application"
+              },
+              {
+                "id": "s10",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n120",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Audit Logs"
+              },
+              {
+                "id": "s11",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n120",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Platform Administrators"
+              },
+              {
+                "id": "s12",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n130",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Regulatory & Compliance Standards"
+              },
+              {
+                "id": "s13",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n130",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Platform Analytics & Dashboards"
+              },
+              {
+                "id": "s14",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n130",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Cloud Infrastructure"
+              },
+              {
+                "id": "s15",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n130",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Audit Trail Report"
+              },
+              {
+                "id": "s16",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n130",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "BI Tools"
+              }
+            ]
+          }
+        },
+        {
+          "id": "A1",
+          "label": "A1",
+          "diagram": {
+            "settings": {
+              "router": "ortho",
+              "cornerRadius": 12,
+              "grid": 10
+            },
+            "nodes": [
+              {
+                "id": "n111",
+                "kind": "function",
+                "x": 160,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Display Asset Marketplace",
+                "number": "A11"
+              },
+              {
+                "id": "n112",
+                "kind": "function",
+                "x": 500,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Process New Asset Upload",
+                "number": "A12"
+              },
+              {
+                "id": "n113",
+                "kind": "function",
+                "x": 160,
+                "y": 380,
+                "w": 220,
+                "h": 120,
+                "name": "Execute Asset Purchase",
+                "number": "A13"
+              }
+            ],
+            "edges": [],
+            "stubs": [
+              {
+                "id": "s1",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n111",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "User Request"
+              },
+              {
+                "id": "s2",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n111",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Authenticated User Session"
+              },
+              {
+                "id": "s3",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n111",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Data Model Schema"
+              },
+              {
+                "id": "s4",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n111",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Asset Marketplace View"
+              },
+              {
+                "id": "s5",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n111",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Streamlit Frontend"
+              },
+              {
+                "id": "s6",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n111",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Backend API (Lambda)"
+              },
+              {
+                "id": "s7",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n111",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Snowflake Connection"
+              },
+              {
+                "id": "s8",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Authenticated User Session"
+              },
+              {
+                "id": "s9",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Streamlit Frontend"
+              },
+              {
+                "id": "s10",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Backend API (Lambda)"
+              },
+              {
+                "id": "s11",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Snowflake Connection"
+              },
+              {
+                "id": "s12",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "File Object"
+              },
+              {
+                "id": "s13",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Asset Metadata"
+              },
+              {
+                "id": "s14",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Uploader ID"
+              },
+              {
+                "id": "s15",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Asset Type"
+              },
+              {
+                "id": "s16",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "S3 Bucket Policy"
+              },
+              {
+                "id": "s17",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Uploaded Asset Confirmation"
+              },
+              {
+                "id": "s18",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Asset Database Record"
+              },
+              {
+                "id": "s19",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Transaction Database Record"
+              },
+              {
+                "id": "s20",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n112",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "S3 Client"
+              },
+              {
+                "id": "s21",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Authenticated User Session"
+              },
+              {
+                "id": "s22",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Data Model Schema"
+              },
+              {
+                "id": "s23",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Streamlit Frontend"
+              },
+              {
+                "id": "s24",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Backend API (Lambda)"
+              },
+              {
+                "id": "s25",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Snowflake Connection"
+              },
+              {
+                "id": "s26",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Transaction Database Record"
+              },
+              {
+                "id": "s27",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Asset ID to Purchase"
+              },
+              {
+                "id": "s28",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Buyer ID"
+              },
+              {
+                "id": "s29",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Purchase Confirmation"
+              },
+              {
+                "id": "s30",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n113",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Updated Asset Record"
+              }
+            ]
+          }
+        },
+        {
+          "id": "A12",
+          "label": "A12",
+          "diagram": {
+            "settings": {
+              "router": "ortho",
+              "cornerRadius": 12,
+              "grid": 10
+            },
+            "nodes": [
+              {
+                "id": "n1121",
+                "kind": "function",
+                "x": 160,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Get or Create Surrogate Key",
+                "number": "A121"
+              }
+            ],
+            "edges": [],
+            "stubs": []
+          }
+        },
+        {
+          "id": "A2",
+          "label": "A2",
+          "diagram": {
+            "settings": {
+              "router": "ortho",
+              "cornerRadius": 12,
+              "grid": 10
+            },
+            "nodes": [
+              {
+                "id": "n121",
+                "kind": "function",
+                "x": 160,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Provision Cloud Infrastructure",
+                "number": "A21"
+              },
+              {
+                "id": "n122",
+                "kind": "function",
+                "x": 500,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Deploy Application Code",
+                "number": "A22"
+              },
+              {
+                "id": "n123",
+                "kind": "function",
+                "x": 160,
+                "y": 380,
+                "w": 220,
+                "h": 120,
+                "name": "Manage Security & RBAC",
+                "number": "A23"
+              },
+              {
+                "id": "n124",
+                "kind": "function",
+                "x": 500,
+                "y": 380,
+                "w": 220,
+                "h": 120,
+                "name": "Monitor Platform Health & Cost",
+                "number": "A24"
+              }
+            ],
+            "edges": [],
+            "stubs": [
+              {
+                "id": "s1",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Architectural Specifications"
+              },
+              {
+                "id": "s2",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "CI/CD Pipeline"
+              },
+              {
+                "id": "s3",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Provisioned Cloud Resources"
+              },
+              {
+                "id": "s4",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Platform Administrators"
+              },
+              {
+                "id": "s5",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Infrastructure-as-Code Files"
+              },
+              {
+                "id": "s6",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Configuration Variables"
+              },
+              {
+                "id": "s7",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "IAM Permissions"
+              },
+              {
+                "id": "s8",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Cloud Provider API Limits"
+              },
+              {
+                "id": "s9",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "State File"
+              },
+              {
+                "id": "s10",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Deployment Logs"
+              },
+              {
+                "id": "s11",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n121",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "IaC Engine"
+              },
+              {
+                "id": "s12",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n122",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "CI/CD Pipeline"
+              },
+              {
+                "id": "s13",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n122",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Deployed Application"
+              },
+              {
+                "id": "s14",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n122",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Application Source Code"
+              },
+              {
+                "id": "s15",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n122",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "CI/CD Pipeline Configuration"
+              },
+              {
+                "id": "s16",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n122",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Automated Tests"
+              },
+              {
+                "id": "s17",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n122",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Deployment Status"
+              },
+              {
+                "id": "s18",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n122",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Git Repository"
+              },
+              {
+                "id": "s19",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n122",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Target Compute Service"
+              }
+            ]
+          }
+        },
+        {
+          "id": "A23",
+          "label": "A23",
+          "diagram": {
+            "settings": {
+              "router": "ortho",
+              "cornerRadius": 12,
+              "grid": 10
+            },
+            "nodes": [
+              {
+                "id": "n1231",
+                "kind": "function",
+                "x": 160,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Authenticate User",
+                "number": "A231"
+              }
+            ],
+            "edges": [],
+            "stubs": []
+          }
+        },
+        {
+          "id": "A3",
+          "label": "A3",
+          "diagram": {
+            "settings": {
+              "router": "ortho",
+              "cornerRadius": 12,
+              "grid": 10
+            },
+            "nodes": [
+              {
+                "id": "n131",
+                "kind": "function",
+                "x": 160,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Ingest Transactional Data",
+                "number": "A31"
+              },
+              {
+                "id": "n132",
+                "kind": "function",
+                "x": 500,
+                "y": 140,
+                "w": 220,
+                "h": 120,
+                "name": "Generate Business Analytics",
+                "number": "A32"
+              },
+              {
+                "id": "n133",
+                "kind": "function",
+                "x": 160,
+                "y": 380,
+                "w": 220,
+                "h": 120,
+                "name": "Provide Audit Trail Access",
+                "number": "A33"
+              }
+            ],
+            "edges": [],
+            "stubs": [
+              {
+                "id": "s1",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n133",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Platform Administrators"
+              },
+              {
+                "id": "s2",
+                "type": "stub",
+                "role": "O",
+                "anchor": {
+                  "nodeId": "n133",
+                  "side": "right",
+                  "role": "O"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Audit Trail Report"
+              },
+              {
+                "id": "s3",
+                "type": "stub",
+                "role": "I",
+                "anchor": {
+                  "nodeId": "n133",
+                  "side": "left",
+                  "role": "I"
+                },
+                "axis": "x",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Audit Request"
+              },
+              {
+                "id": "s4",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n133",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "Data Retention Policies"
+              },
+              {
+                "id": "s5",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n133",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "Snowflake Access History"
+              },
+              {
+                "id": "s6",
+                "type": "stub",
+                "role": "M",
+                "anchor": {
+                  "nodeId": "n133",
+                  "side": "bottom",
+                  "role": "M"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": 1,
+                "label": "AWS CloudTrail"
+              },
+              {
+                "id": "s7",
+                "type": "stub",
+                "role": "C",
+                "anchor": {
+                  "nodeId": "n133",
+                  "side": "top",
+                  "role": "C"
+                },
+                "axis": "y",
+                "offset": 0,
+                "length": 80,
+                "dir": -1,
+                "label": "RBAC Policy (DAB_REGULATOR role)"
+              }
+            ]
+          }
+        }
+      ],
+      "entities": []
+    }
+  ]
+}

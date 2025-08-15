@@ -1,4 +1,6 @@
-streamlit
-pandas
-snowflake-snowpark-python
+streamlit==1.48.0
+snowflake-snowpark-python==1.36.0
+pyarrow==18.1.0        # satisfies Snowflake’s <19 requirement
+pandas>=2.2.2          # wheels for Py 3.13
+numpy>=2.0.0           # wheels for Py 3.13
 graphviz
