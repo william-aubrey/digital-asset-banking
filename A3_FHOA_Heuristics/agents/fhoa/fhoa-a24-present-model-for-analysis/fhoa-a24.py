@@ -96,25 +96,25 @@ def pick(colset, *candidates):
 # SNOWFLAKE DATA LOADING
 # ======================================================================
 @st.cache_data(ttl=300, show_spinner="Loading data from Snowflake...")
-def load_all_from_snowflake(sf_session: Session | None):
-    if not sf_session:
+def load_all_from_snowflake(_sf_session: Session | None):
+    if not _sf_session:
         return None, None, None
 
     s = get_snowflake_cfg()
     sch = f"{s['database']}.{s['schema']}"
 
     # MODELS (optional, used only for names)
-    model_cols = cols("MODELS", sf_session, s)
+    model_cols = cols("MODELS", _sf_session, s)
     mdl_id   = pick(model_cols, "MODEL_ID", "ID")
     mdl_name = pick(model_cols, "MODEL_NAME", "NAME", "TITLE", "LABEL")
     model_rows = []
     if mdl_id and mdl_name:
-        model_rows = sf.sql(
+        model_rows = _sf_session.sql(
             f"SELECT {mdl_id} AS MODEL_ID, {mdl_name} AS MODEL_NAME FROM {sch}.MODELS"
         ).collect()
 
     # FUNCTIONS (required)
-    f_cols   = cols("FUNCTIONS", sf_session, s)
+    f_cols   = cols("FUNCTIONS", _sf_session, s)
     f_id     = pick(f_cols, "FUNCTION_ID", "ID")
     f_name   = pick(f_cols, "FUNCTION_NAME", "NAME", "TITLE", "LABEL")
     f_node   = pick(f_cols, "NODE", "NODE_ID", "NODE_NUMBER", "FUNCTION_NODE", "CODE")
@@ -128,11 +128,11 @@ def load_all_from_snowflake(sf_session: Session | None):
     fn_sql += f", {f_parent} AS PARENT_FUNCTION_ID" if f_parent else ", NULL AS PARENT_FUNCTION_ID"
     fn_sql += f", {f_model}  AS MODEL_ID"           if f_model  else ", NULL AS MODEL_ID"
     fn_sql += f" FROM {sch}.FUNCTIONS"
-    func_rows = sf_session.sql(fn_sql).collect()
+    func_rows = _sf_session.sql(fn_sql).collect()
 
     # FUNCTION_ENTITIES + ENTITIES (optional)
-    fe_cols = cols("FUNCTION_ENTITIES", sf_session, s)
-    e_cols  = cols("ENTITIES", sf_session, s)
+    fe_cols = cols("FUNCTION_ENTITIES", _sf_session, s)
+    e_cols  = cols("ENTITIES", _sf_session, s)
     fe_id_func = pick(fe_cols, "FUNCTION_ID")
     fe_ent_id  = pick(fe_cols, "ENTITY_ID")
     fe_role    = pick(fe_cols, "ROLE", "FUNCTION_ROLE")
@@ -162,7 +162,7 @@ def load_all_from_snowflake(sf_session: Session | None):
                    {fe_role} AS ROLE, NULL AS ENTITY_NAME
             FROM {sch}.FUNCTION_ENTITIES
             """
-        fe_rows = sf_session.sql(fe_sql).collect()
+        fe_rows = _sf_session.sql(fe_sql).collect()
 
     model_name_by_id = {r["MODEL_ID"]: r["MODEL_NAME"] for r in model_rows}
     return func_rows, fe_rows, model_name_by_id
@@ -435,7 +435,7 @@ with st.sidebar.expander("Debug: model build summary", expanded=False):
         st.write({
             "model_id": m["id"],
             "model_name": m["name"],
-            "contexts": [{"id": c["id"], "nodes": len(c["diagram"]["nodes"])} for c in m["contexts"]],
+            "contexts": [{"id": c.get("id"), "nodes": len(c.get("diagram", {}).get("nodes", []))} for c in m.get("contexts", [])],
         })
 
 st.sidebar.download_button(

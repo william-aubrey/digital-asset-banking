@@ -17,6 +17,7 @@
     stubs: [],
     seq: 1,
     activeHandle: null,
+    draggedItem: null,
   };
 
   function newid(p = "id") { return p + (state.seq++); }
@@ -106,7 +107,7 @@
   }
 
   function drawNode(node) {
-    const g = createEl('g', { class: 'g-node' });
+    const g = createEl('g', { class: 'g-node', 'data-node-id': node.id });
 
     g.appendChild(createEl('rect', {
       x: node.x, y: node.y, width: node.w, height: node.h,
@@ -304,10 +305,57 @@
     }
   }
 
+  function getSVGPoint(svgEl, ev) {
+    const pt = svgEl.createSVGPoint();
+    pt.x = ev.clientX;
+    pt.y = ev.clientY;
+    return pt.matrixTransform(svgEl.getScreenCTM().inverse());
+  }
+
   // ---------- Two-click interactions (from stable_app.js) ----------
   function addInteractionListeners() {
     const svgEl = $('svg');
     if (!svgEl) return;
+
+    // Add drag and drop for nodes
+    svgEl.addEventListener('mousedown', ev => {
+      // Ignore clicks on handles, let the click handler manage them
+      if (isHandle(ev.target)) return;
+
+      // Find the g-node that was clicked
+      let gNode = ev.target;
+      while (gNode && gNode !== svgEl && !gNode.classList.contains('g-node')) {
+        gNode = gNode.parentElement;
+      }
+
+      if (gNode && gNode.classList.contains('g-node')) {
+        const nodeId = gNode.dataset.nodeId;
+        const node = nodeById(nodeId);
+        if (node) {
+          const pt = getSVGPoint(svgEl, ev);
+          state.draggedItem = {
+            node: node,
+            offsetX: pt.x - node.x,
+            offsetY: pt.y - node.y,
+          };
+          // Prevent text selection while dragging
+          ev.preventDefault();
+        }
+      }
+    });
+
+    svgEl.addEventListener('mousemove', ev => {
+      if (!state.draggedItem) return;
+      const pt = getSVGPoint(svgEl, ev);
+      const { node, offsetX, offsetY } = state.draggedItem;
+      node.x = snap(pt.x - offsetX);
+      node.y = snap(pt.y - offsetY);
+      render();
+    });
+
+    const stopDragging = () => { state.draggedItem = null; };
+    svgEl.addEventListener('mouseup', stopDragging);
+    svgEl.addEventListener('mouseleave', stopDragging);
 
     svgEl.addEventListener('click', ev => {
       if (!isHandle(ev.target)) return;
