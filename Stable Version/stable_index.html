@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>IDEF0 Diagrammer</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IDEF0 Diagrammer — v0.3.3b</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
-  <div id="app-root">
   <!-- Top metadata & controls -->
   <header class="topbar">
     <div class="left">
@@ -20,16 +18,24 @@
         <label>Date</label>
         <input id="date" />
       </div>
+      <div class="field">
+        <label>Project</label>
+        <input id="project" placeholder="Project name" />
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="status">
+          <option>WORKING</option>
+          <option>DRAFT</option>
+          <option>REC.</option>
+          <option>PUB.</option>
+        </select>
+      </div>
     </div>
-
     <div class="right">
       <div class="field">
         <label>Model</label>
         <select id="modelSelect"></select>
-      </div>
-      <div class="field">
-        <label>Context</label>
-        <select id="contextSelect"></select>
       </div>
       <div class="field">
         <label>Router</label>
@@ -38,7 +44,6 @@
           <option value="curvy">Curvy (non-FIPS)</option>
         </select>
       </div>
-
       <div class="buttons">
         <button id="btnAddBox">+ Function</button>
         <button id="btnOffPage">+ Off-page</button>
@@ -72,9 +77,15 @@
     </div>
   </footer>
 
-  <!-- Streamlit injects the payload here -->
-  <script>window.MODELS = /*__MODELS__*/;</script>
+  <!-- Floating mini palette for labels -->
+  <div class="label-editor" id="labelEditor">
+    <input id="labelInput" />
+    <div class="label-row">
+      <select id="entityList"></select>
+      <button id="btnLabelApply">Apply</button>
+    </div>
+  </div>
 
-</div>
+  <script src="app.js"></script>
 </body>
 </html>

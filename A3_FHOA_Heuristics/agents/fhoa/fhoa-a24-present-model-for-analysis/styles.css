@@ -1,7 +1,14 @@
-/* Reset-ish */
+/* =================================================================== */
+/* GLOBAL STYLES & RESETS                                              */
+/* =================================================================== */
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
+/* =================================================================== */
+/* CSS VARIABLES (THEME)                                               */
+/* :root targets the <html> element and is the standard place to       */
+/* declare global variables for colors, spacing, etc.                  */
+/* =================================================================== */
 :root {
   --grid: 10px;
   --border: #111;
@@ -12,7 +19,11 @@ html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -ap
   --function-bg: #fff;
 }
 
-/* Full-height app frame INSIDE the component: 10 / 80 / 10 */
+/* =================================================================== */
+/* MAIN APP LAYOUT                                                     */
+/* #app-root is the main container for the entire UI. It uses a grid   */
+/* to create the top bar, main canvas, and bottom bar layout.          */
+/* =================================================================== */
 #app-root {
   width: 100vw;
   height: 100svh;   /* mobile safe */
@@ -23,7 +34,10 @@ html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -ap
   gap: 0;
 }
 
-/* Top/bottom bars: inset shadows instead of borders (no layout height) */
+/* =================================================================== */
+/* UI: TOP & BOTTOM BARS                                               */
+/* Styles for the header and footer areas, including fields & buttons. */
+/* =================================================================== */
 .topbar, .bottombar {
   display: flex;
   justify-content: space-between;
@@ -45,7 +59,10 @@ html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -ap
 button { border: 1px solid #111; background: #fff; padding: .3rem .5rem; border-radius: .35rem; cursor: pointer; font-size: .95em; }
 button:active { transform: translateY(1px); }
 
-/* Canvas fills the middle row, zero overflow */
+/* =================================================================== */
+/* UI: CANVAS & GRID                                                   */
+/* Styles for the main drawing area, including the background grid.    */
+/* =================================================================== */
 .canvas-wrap { position: relative; min-height: 0; overflow: hidden; }
 .canvas-wrap .grid {
   position: absolute; inset: 0;
@@ -68,7 +85,10 @@ button:active { transform: translateY(1px); }
   touch-action: none;
 }
 
-/* Nodes / handles / edges */
+/* =================================================================== */
+/* SVG: DIAGRAM ELEMENTS                                               */
+/* Styles for the actual IDEF0 components: nodes, edges, stubs, etc.   */
+/* =================================================================== */
 .g-node { cursor: move; }
 .node-box { fill: var(--function-bg); stroke: var(--border); stroke-width: 2px; rx: 0; ry: 0; }
 .node-name { font-weight: 700; font-size: 14px; }
@@ -85,7 +105,10 @@ button:active { transform: translateY(1px); }
 .edge-label, .stub-label { font-size: 12px; dominant-baseline: middle; user-select: none; }
 .selected .node-box { stroke-dasharray: 4 3; }
 
-/* Floating label editor */
+/* =================================================================== */
+/* UI: FLOATING EDITOR (Future Use)                                    */
+/* Styles for a potential pop-up editor for changing labels.           */
+/* =================================================================== */
 .label-editor {
   position: absolute; display: none; gap: .25rem;
   background: #fff; border: 1px solid #111; padding: .25rem; border-radius: .35rem;

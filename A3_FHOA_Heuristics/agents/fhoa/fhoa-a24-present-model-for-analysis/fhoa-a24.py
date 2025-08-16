@@ -4,48 +4,52 @@
 # injects them into index.html as window.MODELS, and renders.
 # ============================================================
 
+# ======================================================================
+# IMPORTS
+# ======================================================================
 from __future__ import annotations
 import json
 from pathlib import Path
 import streamlit as st
 from snowflake.snowpark import Session
 
-# ---------- Page ----------
+# ======================================================================
+# STREAMLIT PAGE CONFIG & SESSION STATE
+# ======================================================================
 st.set_page_config(page_title="IDEF0 Diagrammer", layout="wide")
 
-# ---------- Session state (for loader UI) ----------
 if "extra_models" not in st.session_state:
     st.session_state["extra_models"] = []
 if "load_key" not in st.session_state:
     # bump this to reset uploader/textarea widgets after a successful load
     st.session_state["load_key"] = 0
 
-# ---------- Snowflake session ----------
+# ======================================================================
+# SNOWFLAKE CONNECTION
+# ======================================================================
 @st.cache_resource
-def get_session():
+def get_snowflake_cfg():
+    if "connections" in st.secrets and "snowflake" in st.secrets["connections"]:
+        return st.secrets["connections"]["snowflake"]
+    if "snowflake" in st.secrets:
+        return st.secrets["snowflake"]
+    return None
+
+@st.cache_resource
+def get_session() -> Session | None:
+    cfg = get_snowflake_cfg()
+    if not cfg:
+        st.sidebar.warning("No Snowflake credentials found in secrets.toml.")
+        return None
     try:
-        cfg = st.secrets["connections"]["snowflake"]
-        return Session.builder.configs({
-            "account":   cfg["account"],
-            "user":      cfg["user"],
-            "password":  cfg["password"],
-            "role":      cfg["role"],
-            "warehouse": cfg["warehouse"],
-            "database":  cfg["database"],
-            "schema":    cfg["schema"],
-        }).create()
+        return Session.builder.configs(cfg).create()
     except Exception as e:
         st.sidebar.error(f"Snowflake connection failed: {e}")
         return None
 
-sf = get_session()
-if not sf:
-    st.stop()
-
-s = st.secrets["connections"]["snowflake"]
-st.sidebar.success(f"Snowflake: {s['account']}/{s['database']}.{s['schema']}")
-
-# ---------- Helpers ----------
+# ======================================================================
+# HELPER FUNCTIONS
+# ======================================================================
 def canon_node(node: str) -> str:
     if not node:
         return node
@@ -71,7 +75,8 @@ def sort_children(parent_canon: str, child_nodes):
     out.sort(key=lambda x: (x[0], x[1]))
     return [orig for _, __, orig in out]
 
-def cols(table):
+def cols(table, sf_session, db_schema_config):
+    s = db_schema_config
     sch = f"{s['database']}.INFORMATION_SCHEMA.COLUMNS"
     q = f"""
     SELECT COLUMN_NAME
@@ -79,7 +84,7 @@ def cols(table):
     WHERE TABLE_SCHEMA = '{s['schema'].upper()}'
       AND TABLE_NAME   = '{table.upper()}'
     """
-    return {r["COLUMN_NAME"].upper() for r in sf.sql(q).collect()}
+    return {r["COLUMN_NAME"].upper() for r in sf_session.sql(q).collect()}
 
 def pick(colset, *candidates):
     for c in candidates:
@@ -87,13 +92,19 @@ def pick(colset, *candidates):
             return c
     return None
 
-# ---------- Load data from Snowflake ----------
-@st.cache_data(ttl=300, show_spinner=False)
-def load_all():
+# ======================================================================
+# SNOWFLAKE DATA LOADING
+# ======================================================================
+@st.cache_data(ttl=300, show_spinner="Loading data from Snowflake...")
+def load_all_from_snowflake(sf_session: Session | None):
+    if not sf_session:
+        return None, None, None
+
+    s = get_snowflake_cfg()
     sch = f"{s['database']}.{s['schema']}"
 
     # MODELS (optional, used only for names)
-    model_cols = cols("MODELS")
+    model_cols = cols("MODELS", sf_session, s)
     mdl_id   = pick(model_cols, "MODEL_ID", "ID")
     mdl_name = pick(model_cols, "MODEL_NAME", "NAME", "TITLE", "LABEL")
     model_rows = []
@@ -103,7 +114,7 @@ def load_all():
         ).collect()
 
     # FUNCTIONS (required)
-    f_cols   = cols("FUNCTIONS")
+    f_cols   = cols("FUNCTIONS", sf_session, s)
     f_id     = pick(f_cols, "FUNCTION_ID", "ID")
     f_name   = pick(f_cols, "FUNCTION_NAME", "NAME", "TITLE", "LABEL")
     f_node   = pick(f_cols, "NODE", "NODE_ID", "NODE_NUMBER", "FUNCTION_NODE", "CODE")
@@ -117,11 +128,11 @@ def load_all():
     fn_sql += f", {f_parent} AS PARENT_FUNCTION_ID" if f_parent else ", NULL AS PARENT_FUNCTION_ID"
     fn_sql += f", {f_model}  AS MODEL_ID"           if f_model  else ", NULL AS MODEL_ID"
     fn_sql += f" FROM {sch}.FUNCTIONS"
-    func_rows = sf.sql(fn_sql).collect()
+    func_rows = sf_session.sql(fn_sql).collect()
 
     # FUNCTION_ENTITIES + ENTITIES (optional)
-    fe_cols = cols("FUNCTION_ENTITIES")
-    e_cols  = cols("ENTITIES")
+    fe_cols = cols("FUNCTION_ENTITIES", sf_session, s)
+    e_cols  = cols("ENTITIES", sf_session, s)
     fe_id_func = pick(fe_cols, "FUNCTION_ID")
     fe_ent_id  = pick(fe_cols, "ENTITY_ID")
     fe_role    = pick(fe_cols, "ROLE", "FUNCTION_ROLE")
@@ -151,20 +162,16 @@ def load_all():
                    {fe_role} AS ROLE, NULL AS ENTITY_NAME
             FROM {sch}.FUNCTION_ENTITIES
             """
-        fe_rows = sf.sql(fe_sql).collect()
+        fe_rows = sf_session.sql(fe_sql).collect()
 
     model_name_by_id = {r["MODEL_ID"]: r["MODEL_NAME"] for r in model_rows}
     return func_rows, fe_rows, model_name_by_id
 
-try:
-    func_rows, fe_rows, model_name_by_id = load_all()
-except Exception as e:
-    st.sidebar.error(f"Snowflake load failed: {e}")
-    st.stop()
-
-# ---------- Shape rows → MODELS payload ----------
-models = []
-if func_rows:
+# ======================================================================
+# DATA SHAPING (DATABASE ROWS -> JSON PAYLOAD)
+# ======================================================================
+def shape_data_into_models(func_rows, fe_rows, model_name_by_id):
+    models = []
     def key_of(r): return r["MODEL_ID"] if r["MODEL_ID"] is not None else 1
     by_model = {}
     for r in func_rows:
@@ -332,8 +339,45 @@ if func_rows:
             "contexts": contexts,
             "entities": [],
         })
+    return models
 
-# ---------- Sidebar: Load model (upload or paste) ----------
+# ======================================================================
+# MAIN LOGIC: LOAD DATA
+# ======================================================================
+sf_session = get_session()
+models = []
+
+try:
+    func_rows, fe_rows, model_name_by_id = load_all_from_snowflake(sf_session)
+    if func_rows:
+        models = shape_data_into_models(func_rows, fe_rows, model_name_by_id)
+        s_cfg = get_snowflake_cfg()
+        st.sidebar.success(f"Snowflake: {s_cfg['account']}/{s_cfg['database']}.{s_cfg['schema']}")
+    else:
+        # This branch is hit if sf_session is None, or if the query returns no rows
+        if sf_session: # Connection was successful but no data
+             st.sidebar.info("No models found in Snowflake.")
+        # Let it fall through to the local file load
+except Exception as e:
+    st.sidebar.error(f"Snowflake load failed: {e}")
+    # Let it fall through to the local file load
+
+if not models:
+    st.sidebar.info("Attempting to load from local `sample_models.json`...")
+    try:
+        sample_path = Path(__file__).parent / "sample_models.json"
+        with open(sample_path, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+            models = payload.get("models", [])
+            st.sidebar.success("Loaded models from local `sample_models.json`.")
+    except FileNotFoundError:
+        st.sidebar.warning("`sample_models.json` not found. No models to display.")
+    except Exception as e:
+        st.sidebar.error(f"Failed to load `sample_models.json`: {e}")
+
+# ======================================================================
+# STREAMLIT SIDEBAR: LOAD LOCAL MODEL
+# ======================================================================
 with st.sidebar.expander("Load model", expanded=False):
     k = st.session_state["load_key"]
     up = st.file_uploader("Upload JSON", type=["json"], key=f"uploader_{k}")
@@ -377,11 +421,15 @@ with st.sidebar.expander("Load model", expanded=False):
         st.session_state["extra_models"] = []
         st.success("Cleared.")
 
-# ---------- Merge user-loaded models ----------
+# ======================================================================
+# MODEL MERGING & DEBUGGING
+# ======================================================================
+
+# ---------- Merge user-loaded models into main list ----------
 if st.session_state.get("extra_models"):
     models = models + [{**m, "id": str(m.get("id"))} for m in st.session_state["extra_models"]]
 
-# ---------- Debug + payload download ----------
+# ---------- Debug summary and payload download button ----------
 with st.sidebar.expander("Debug: model build summary", expanded=False):
     for m in models:
         st.write({
@@ -397,7 +445,9 @@ st.sidebar.download_button(
     mime="application/json"
 )
 
-# ---------- Inline CSS/JS and render ----------
+# ======================================================================
+# ASSET INLINING & HTML RENDERING
+# ======================================================================
 def inline_assets(html: str) -> str:
     """Read styles/app script from ./static or project root and inline them."""
     base = Path(__file__).parent
