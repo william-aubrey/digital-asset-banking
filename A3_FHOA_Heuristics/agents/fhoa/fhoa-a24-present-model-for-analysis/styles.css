@@ -29,7 +29,7 @@ html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -ap
   height: 100svh;   /* mobile safe */
   height: 100dvh;   /* modern desktop */
   display: grid;
-  grid-template-rows: 10% 80% 10%;
+  grid-template-rows: 20% 70% 10%;
   overflow: hidden; /* no internal scroll */
   gap: 0;
 }
@@ -83,6 +83,11 @@ button:active { transform: translateY(1px); }
   width: 100%; height: 100%;
   display: block; z-index: 1;
   touch-action: none;
+  cursor: grab;
+}
+
+#svg.canvas.is-panning {
+  cursor: grabbing;
 }
 
 /* =================================================================== */

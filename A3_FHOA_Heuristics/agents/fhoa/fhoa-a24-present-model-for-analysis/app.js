@@ -18,6 +18,9 @@
     seq: 1,
     activeHandle: null,
     draggedItem: null,
+    panX: 0,
+    panY: 0,
+    panning: null, // { startX, startY, initialPanX, initialPanY }
   };
 
   function newid(p = "id") { return p + (state.seq++); }
@@ -206,17 +209,24 @@
     clearSVG(svgEl);
     appendDefs(svgEl);
 
+    // Create a group for panning and zooming
+    const canvasGroup = createEl('g', {
+      id: 'canvas-group',
+      transform: `translate(${state.panX}, ${state.panY})`
+    });
+    svgEl.appendChild(canvasGroup);
+
     state.stubs.forEach(stub => {
       const el = drawStub(stub);
-      if (el) svgEl.appendChild(el);
+      if (el) canvasGroup.appendChild(el);
     });
     state.edges.forEach(edge => {
       const el = drawEdge(edge);
-      if (el) svgEl.appendChild(el);
+      if (el) canvasGroup.appendChild(el);
     });
     state.nodes.forEach(node => {
       const el = drawNode(node);
-      if (el) svgEl.appendChild(el);
+      if (el) canvasGroup.appendChild(el);
     });
 
     // Restore selection highlight
@@ -317,8 +327,8 @@
     const svgEl = $('svg');
     if (!svgEl) return;
 
-    // Add drag and drop for nodes
     svgEl.addEventListener('mousedown', ev => {
+      // If a handle is active, let the click handler manage it.
       // Ignore clicks on handles, let the click handler manage them
       if (isHandle(ev.target)) return;
 
@@ -341,21 +351,47 @@
           // Prevent text selection while dragging
           ev.preventDefault();
         }
+      } else {
+        // ===================================================================
+        // BEGIN: CANVAS PANNING LOGIC
+        // ===================================================================
+        state.panning = {
+          startX: ev.clientX,
+          startY: ev.clientY,
+          initialPanX: state.panX,
+          initialPanY: state.panY,
+        };
+        svgEl.classList.add('is-panning');
+        ev.preventDefault();
+        // ===================================================================
+        // END: CANVAS PANNING LOGIC
+        // ===================================================================
       }
     });
 
     svgEl.addEventListener('mousemove', ev => {
-      if (!state.draggedItem) return;
-      const pt = getSVGPoint(svgEl, ev);
-      const { node, offsetX, offsetY } = state.draggedItem;
-      node.x = snap(pt.x - offsetX);
-      node.y = snap(pt.y - offsetY);
-      render();
+      if (state.draggedItem) {
+        const pt = getSVGPoint(svgEl, ev);
+        const { node, offsetX, offsetY } = state.draggedItem;
+        node.x = snap(pt.x - offsetX);
+        node.y = snap(pt.y - offsetY);
+        render();
+      } else if (state.panning) {
+        const dx = ev.clientX - state.panning.startX;
+        const dy = ev.clientY - state.panning.startY;
+        state.panX = state.panning.initialPanX + dx;
+        state.panY = state.panning.initialPanY + dy;
+        render();
+      }
     });
 
-    const stopDragging = () => { state.draggedItem = null; };
-    svgEl.addEventListener('mouseup', stopDragging);
-    svgEl.addEventListener('mouseleave', stopDragging);
+    const stopInteractions = () => {
+      state.draggedItem = null;
+      state.panning = null;
+      svgEl.classList.remove('is-panning');
+    };
+    svgEl.addEventListener('mouseup', stopInteractions);
+    svgEl.addEventListener('mouseleave', stopInteractions);
 
     svgEl.addEventListener('click', ev => {
       if (!isHandle(ev.target)) return;
@@ -379,6 +415,31 @@
     });
   }
 
+    // ---------- BEGIN: New function box --------------------------------
+  function wireAddFunctionButton() {
+    const btn = $('btnAddBox');
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+      // Simple placement: find the lowest point and add below it.
+      const margin = 4 * GRID;
+      const lowestPoint = state.nodes.reduce((max, n) => Math.max(max, n.y + n.h), 0);
+      const y = snap(lowestPoint > 0 ? lowestPoint + margin : 2 * GRID);
+      const x = snap(2 * GRID);
+
+      const newNode = {
+        id: newid('n'),
+        kind: 'function',
+        x: x, y: y, w: 220, h: 120,
+        name: 'New Function',
+        number: 'A?'
+      };
+      state.nodes.push(newNode);
+      render();
+    });
+  }
+  // ---------- END: New function box --------------------------------
+
   // ---------- Optional: hook a "Load" button in the footer ----------
   function wireOptionalLoadButton() {
     const btn = document.getElementById('btnLoad');
@@ -395,6 +456,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     try {
       applyModelsFromPayload();
+      wireAddFunctionButton();
       wireOptionalLoadButton();
       addInteractionListeners();
     } catch (e) {
