@@ -112,18 +112,33 @@
   function drawNode(node) {
     const g = createEl('g', { class: 'g-node', 'data-node-id': node.id });
 
-    g.appendChild(createEl('rect', {
-      x: node.x, y: node.y, width: node.w, height: node.h,
-      class: 'node-box'
-    }));
-    g.appendChild(createEl('text', {
-      x: node.x + node.w / 2, y: node.y + 20,
-      'text-anchor': 'middle', class: 'node-name'
-    }, node.name || ''));
-    g.appendChild(createEl('text', {
-      x: node.x + node.w / 2, y: node.y + node.h - 8,
-      'text-anchor': 'middle', class: 'node-number'
-    }, node.number || ''));
+    if (node.kind === 'offpage') {
+      const cx = node.x + node.w / 2;
+      const cy = node.y + node.h / 2;
+      g.appendChild(createEl('circle', {
+        cx, cy, r: node.w / 2,
+        class: 'offpage-circle'
+      }));
+      g.appendChild(createEl('text', {
+        x: cx, y: cy,
+        'text-anchor': 'middle',
+        'dominant-baseline': 'middle',
+        class: 'offpage-text'
+      }, node.name || ''));
+    } else { // Default to function box
+      g.appendChild(createEl('rect', {
+        x: node.x, y: node.y, width: node.w, height: node.h,
+        class: 'node-box'
+      }));
+      g.appendChild(createEl('text', {
+        x: node.x + node.w / 2, y: node.y + 20,
+        'text-anchor': 'middle', class: 'node-name'
+      }, node.name || ''));
+      g.appendChild(createEl('text', {
+        x: node.x + node.w / 2, y: node.y + node.h - 8,
+        'text-anchor': 'middle', class: 'node-number'
+      }, node.number || ''));
+    }
 
     // Add interactive handles (from stable_app.js)
     const hp = handlePoints(node);
@@ -423,7 +438,7 @@
     btn.addEventListener('click', () => {
       // Simple placement: find the lowest point and add below it.
       const margin = 4 * GRID;
-      const lowestPoint = state.nodes.reduce((max, n) => Math.max(max, n.y + n.h), 0);
+      const lowestPoint = state.nodes.reduce((max, n) => Math.max(max, n.y + (n.h || 0)), 0);
       const y = snap(lowestPoint > 0 ? lowestPoint + margin : 2 * GRID);
       const x = snap(2 * GRID);
 
@@ -439,6 +454,29 @@
     });
   }
   // ---------- END: New function box --------------------------------
+  
+  // ---------- BEGIN: New off-page connector --------------------------
+  function addOffPageConnector() {
+    const margin = 4 * GRID;
+    const lowestPoint = state.nodes.reduce((max, n) => Math.max(max, n.y + (n.h || 0)), 0);
+    const y = snap(lowestPoint > 0 ? lowestPoint + margin : 2 * GRID);
+    const x = snap(2 * GRID);
+
+    const newNode = {
+      id: newid('o'),
+      kind: 'offpage',
+      x: x, y: y, w: 56, h: 56,
+      name: 'OFF-PAGE'
+    };
+    state.nodes.push(newNode);
+    render();
+  }
+
+  function wireAddOffPageButton() {
+    const btn = $('btnOffPage');
+    if (btn) btn.addEventListener('click', addOffPageConnector);
+  }
+  // ---------- END: New off-page connector ----------------------------
 
   // ---------- Optional: hook a "Load" button in the footer ----------
   function wireOptionalLoadButton() {
@@ -457,6 +495,7 @@
     try {
       applyModelsFromPayload();
       wireAddFunctionButton();
+      wireAddOffPageButton();
       wireOptionalLoadButton();
       addInteractionListeners();
     } catch (e) {

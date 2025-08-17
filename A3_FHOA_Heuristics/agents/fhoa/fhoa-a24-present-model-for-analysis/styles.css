@@ -99,6 +99,19 @@ button:active { transform: translateY(1px); }
 .node-name { font-weight: 700; font-size: 14px; }
 .node-number { font-size: 12px; }
 
+.offpage-circle {
+  fill: #fff;
+  stroke: #64748b; /* A muted blue-gray */
+  stroke-width: 2px;
+  stroke-dasharray: 4 4;
+}
+
+.offpage-text {
+  font-size: 10px;
+  fill: #334155; /* A darker blue-gray for text */
+  font-weight: 600;
+  text-transform: uppercase;
+}
 .handle { r: 6; fill: #fff; stroke: var(--handle); stroke-width: 2; pointer-events: all; }
 .handle:hover { stroke: var(--handle-hover); }
 .handle.active { fill: var(--handle-active); stroke: var(--handle-hover); }
